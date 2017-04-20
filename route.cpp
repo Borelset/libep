@@ -5,7 +5,7 @@
 #include <iostream>
 #include "route.h"
 
-#define SOURCE_PATH "/home/borelset/server_source/"
+#define SOURCE_PATH "./pages/"
 
 struct routenode routelist[] =
 {
@@ -16,6 +16,7 @@ struct routenode routelist[] =
 int open_file(char* path)
 {
     int pagefd = -1;
+std::cout << path << std::endl;
     pagefd = open(path, O_RDONLY);
     return pagefd;
 }
