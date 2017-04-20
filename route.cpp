@@ -16,7 +16,6 @@ struct routenode routelist[] =
 int open_file(char* path)
 {
     int pagefd = -1;
-std::cout << path << std::endl;
     pagefd = open(path, O_RDONLY);
     return pagefd;
 }
