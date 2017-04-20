@@ -7,13 +7,13 @@
 #include <stdio.h>
 #include "methods.h"
 
-#define MAX_URL_LENTH 255
+#define MAX_URL_LENGTH 256
 
 using namespace std;
 
-void buffer_init(char* buffer, int lenth)
+void buffer_init(char* buffer, int length)
 {
-    for(int i=0;i<lenth;i++)
+    for(int i=0;i<length;i++)
     {
         buffer[i] = '\0';
     }
@@ -39,7 +39,7 @@ int startup(int port)
         cerr << "error: bind socket\n";
         return -2;
     }
-    if( listen(sockfd, 10) < 0)
+    if( listen(sockfd, 20) < 0)
     {
         cerr << "error: listen socket\n";
         return -3;
@@ -49,11 +49,12 @@ int startup(int port)
 
 int request_process(int sock)
 {
-    char request[MAX_URL_LENTH];
-    recv(sock, &request, MAX_URL_LENTH, 0);
+    char request[MAX_URL_LENGTH];
+    recv(sock, &request, MAX_URL_LENGTH, 0);
 
     char service_type[10];
     buffer_init(service_type, 10);
+
     for(int i=0;i<10;i++)
     {
         if(*((char*)request + i) != ' ')
@@ -61,19 +62,21 @@ int request_process(int sock)
             service_type[i] = *((char*)request + i);
         }
     }
-    int st_lenth = strlen(service_type);
+    int st_length = strlen(service_type);
 
-    char url[255];
-    buffer_init(url, 255);
-    for(int i=0;i<10;i++)
+    char url[MAX_URL_LENGTH];
+    buffer_init(url, MAX_URL_LENGTH);
+    for(int i=0;i<MAX_URL_LENGTH;i++)
     {
-        if(*((char*)request + st_lenth + 1 + i) != ' ')
+        if(*((char*)request + st_length + 1 + i) != ' ')
         {
-            url[i] = *((char*)request + st_lenth + 1 + i);
+            url[i] = *((char*)request + st_length + 1 + i);
         }
     }
 
-    method(service_type, sock, url);
+    char content[256];
+
+    method(service_type, sock, url, content);
 
     return 0;
 }
@@ -104,7 +107,7 @@ int main(int argc, char *argv[])
         cerr << "error: fail in startup\n";
         return -2;
     }
-    cout << "server is running at port: " << port << " ..." << endl;
+    cout << "server is running at port: " << port << " ..." << endl << endl;
 
     while(1)
     {
