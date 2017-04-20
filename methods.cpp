@@ -1,13 +1,17 @@
 #include <iostream>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <string>
+#include <math.h>
 #include "methods.h"
-
-#define source_path "/home/borelset/server_source"
+#include "route.h"
 
 struct methodnode methodlist[] =
 {
@@ -20,23 +24,57 @@ struct methodnode methodlist[] =
     {"TARCE",   method_unimplement,   nullptr       }
 };
 
-int open_file(char* path)
+char* itoa(int num, char* addr)
 {
-    int pagefd = -1;
-    pagefd = open(path, O_RDONLY);
-    return pagefd;
+    sprintf(addr, "%d", num);
+    return addr;
+}
+
+int head_sender(int sock, int length, int status)
+{
+    char head_http[] = "HTTP/1.1 ";
+    char head_status_200[] = "200 OK\r\n";
+    char head_status_400[] = "400 BAD REQUEST\r\n";
+    char head_status_404[] = "404 NOT FOUND\r\n";
+    char head_info[] = "Server: my httpserver 1.0\r\n"
+                       "Content-type: text/html\r\n";
+    char head_length[30] = "Content-Length: ";
+    char length_char[256];
+    strcat(head_length, itoa(length, length_char));
+    strcat(head_length, "\r\n");
+    char head_end[] = "\r\n";
+
+    char buffer[1024];
+    strcpy(buffer, head_http);
+    if(status == 200)
+    {
+        strcat(buffer, head_status_200);
+    }
+    else if(status == 400)
+    {
+        strcat(buffer, head_status_400);
+    }
+    else if(status == 404)
+    {
+        strcat(buffer, head_status_404);
+    }
+    strcat(buffer, head_info);
+    strcat(buffer, head_length);
+    strcat(buffer, head_end);
+
+    send(sock, buffer, strlen(buffer), 0);
+    return 0;
 }
 
 int not_found(int sock)
 {
-    const char* buffer =  "HTTP/1.1 404 NOT FOUND\r\n"
-                          "Server: my httpserver 1.0\r\n"
-                          "Content-type: text/html\r\n"
-                          "\r\n"
-                          "<html>"
+    const char* buffer =  "<html>"
                           "<head><title>NOT FOUND</title></head>\r\n"
                           "<body><p>The page your applied is not found.</p></body>\r\n"
                           "</html>";
+    int length = strlen(buffer);
+
+    head_sender(sock, length, 404);
     send(sock, buffer, strlen(buffer), 0);
     return 0;
 }
@@ -44,23 +82,20 @@ int not_found(int sock)
 int method_get(int sock, char* url)
 {
     std::cout << "this is GET method with a url: " << url << std::endl;
-    char buffer[100] =  "HTTP/1.1 200 OK\r\n"
-                        "Server: my httpserver 1.0\r\n"
-                        "Content-type: text/html\r\n"
-                        "\r\n";
-    send(sock, buffer, strlen(buffer), 0);
 
-    char path[100];
-    strcpy(path, source_path);
-    strcat(path, url);
-
-    int pagefd = open_file(path);
+    int pagefd = route(url);
     if(pagefd < 0)
     {
         not_found(sock);
         return -1;
     }
+    struct stat statbuf;
+    fstat(pagefd, &statbuf);
+    int file_length = statbuf.st_size;
 
+    head_sender(sock, file_length, 200);
+
+    char buffer[100];
     while(read(pagefd, buffer, 100) != 0)
     {
         send(sock, buffer, strlen(buffer), 0);
@@ -82,14 +117,13 @@ int method_unimplement(int sock, char* url)
 
 int method_wrongmethod(int sock, char* url)
 {
-    const char* buffer =  "HTTP/1.1 400 BAD REQUEST\r\n"
-                          "Server: my httpserver 1.0\r\n"
-                          "Content-type: text/html\r\n"
-                          "\r\n"
-                          "<html>"
+    const char* buffer =  "<html>"
                           "<head><title>bad request</title></head>\r\n"
                           "<body><p>Your browser sent a bad request, such as a POST without a Content-Length.</p></body>\r\n"
                           "</html>";
+    int length = strlen(buffer);
+
+    head_sender(sock, length, 400);
     send(sock, buffer, strlen(buffer), 0);
     return 0;
 }
