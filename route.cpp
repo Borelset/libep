@@ -4,8 +4,11 @@
 #include <string.h>
 #include <iostream>
 #include "route.h"
+#include "log.h"
 
 #define SOURCE_PATH "./source/"
+
+extern _log logout;
 
 struct routenode routelist[] =
 {
@@ -61,7 +64,7 @@ struct url_node url_analysis(char* url)
 int route(char* url)
 {
     struct url_node url_processed = url_analysis(url);
-    std::cout << "file: " << url_processed.file << "\t|query: " << url_processed.query_string << "\t|fragment: " << url_processed.fragment << std::endl;
+    logout << "file: " << url_processed.file << "\t|query: " << url_processed.query_string << "\t|fragment: " << url_processed.fragment << logout;
     struct routenode* p = routelist;
     int pagefd = -1;
     char path[256];

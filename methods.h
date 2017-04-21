@@ -1,6 +1,7 @@
 #ifndef METHODS_H
 #define METHODS_H
 
+char* itoa(int num, char* addr);
 int method_get(int epollfd, int fd, char* url, char* content);
 int method_post(int epollfd, int fd, char* url, char* content);
 int method_unimplement(int epollfd, int fd, char* url, char* content);

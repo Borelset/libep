@@ -1,5 +1,3 @@
-#include "epoll_process.h"
-#include "methods.h"
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -9,6 +7,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <iostream>
+#include "epoll_process.h"
+#include "methods.h"
+#include "log.h"
 
 #define EPOLLSIZE 256
 #define BUFFER_LENGTH 1024
@@ -18,6 +19,7 @@ using namespace std;
 
 int filefd = -1;
 char buf[BUFFER_LENGTH];
+extern _log logout;
 
 void add_event(int epollfd, int fd, int state)
 {
@@ -51,11 +53,12 @@ void accept_process(int epollfd, int listenfd)
     clifd = accept(listenfd, (struct sockaddr*)&cliaddr, &sockaddr_length);
     if(clifd == -1)
     {
-        perror("error: accept ");
+        logout << "accept: " << strerror(errno) << logout;
     }
     else
     {
-        cout << "accept a connection from: " << inet_ntoa(cliaddr.sin_addr) << ":" << cliaddr.sin_port << endl;
+        char logout_buffer[10];
+        logout << "accept a connection from: " << inet_ntoa(cliaddr.sin_addr) << ":" << itoa(cliaddr.sin_port, logout_buffer) << logout;
         add_event(epollfd, clifd, EPOLLIN);
     }
 }
@@ -65,7 +68,7 @@ void recv_process(int epollfd, int fd)
     int read_flag = recv(fd, buf, BUFFER_LENGTH, 0);
     if(read_flag == -1)
     {
-        perror("error: recv ");
+        logout << "recv: " << strerror(errno) << logout;
         close(fd);
         delete_event(epollfd, fd, EPOLLIN);
     }
@@ -92,7 +95,7 @@ void send_process(int epollfd, int fd)
     int send_flag = send(fd, buf, strlen(buf), 0);
     if(send_flag == -1)
     {
-        perror("error: send head ");
+        logout << "send head: " << strerror(errno) << logout;
         close(fd);
         close(filefd);
         filefd = -1;
@@ -106,7 +109,7 @@ void send_process(int epollfd, int fd)
     int send_file_flag = sendfile(fd, filefd, NULL, file_length);
     if(send_file_flag == -1)
     {
-        perror("error: sendfile ");
+        logout << "sendfile: " << strerror(errno) << logout;
         close(fd);
         close(filefd);
         filefd = -1;
@@ -114,6 +117,7 @@ void send_process(int epollfd, int fd)
         return;
     }
 
+    logout << "send done" << logout;
     close(filefd);
     filefd = -1;
     modify_event(epollfd, fd, EPOLLIN);

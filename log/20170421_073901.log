@@ -1,0 +1,20 @@
+2017/04/21-07:39:01	server is running at port: 8080 ...
+2017/04/21-07:39:06	accept a connection from: 192.168.17.1:3378
+2017/04/21-07:39:06	accept a connection from: 192.168.17.1:3634
+2017/04/21-07:39:06	receive a GET method request with a url: /
+2017/04/21-07:39:06	file: /	|query: 	|fragment: 
+2017/04/21-07:39:06	send done
+2017/04/21-07:39:06	receive a GET method request with a url: /favicon.ico
+2017/04/21-07:39:06	file: /favicon.ico	|query: 	|fragment: 
+2017/04/21-07:39:06	send done
+2017/04/21-07:39:58	accept a connection from: 192.168.17.1:35378
+2017/04/21-07:39:58	accept a connection from: 192.168.17.1:35634
+2017/04/21-07:39:58	accept a connection from: 192.168.17.1:35890
+2017/04/21-07:39:58	receive a GET method request with a url: /wrong_method
+2017/04/21-07:39:58	file: /wrong_method	|query: 	|fragment: 
+2017/04/21-07:39:58	send done
+2017/04/21-07:40:14	accept a connection from: 192.168.17.1:3635
+2017/04/21-07:40:14	accept a connection from: 192.168.17.1:3891
+2017/04/21-07:40:14	receive a GET method request with a url: /unimplement_method
+2017/04/21-07:40:14	file: /unimplement_method	|query: 	|fragment: 
+2017/04/21-07:40:14	send done
