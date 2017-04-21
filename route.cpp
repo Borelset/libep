@@ -5,18 +5,20 @@
 #include <iostream>
 #include "route.h"
 
-#define SOURCE_PATH "./pages/"
+#define SOURCE_PATH "./source/"
 
 struct routenode routelist[] =
 {
-    {"/",       "index.html",   &routelist[1]   },
-    {"/index",  "index.html",   nullptr         }
+    {"/",                   "index.html",           &routelist[1]   },
+    {"/index",              "index.html",           &routelist[2]   },
+    {"/unimplement_method", "unimplement.html",     &routelist[3]   },
+    {"/wrong_method",       "wrong.html",           &routelist[4]   },
+    {"",                    "not_found.html",       nullptr         }
 };
 
 int open_file(char* path)
 {
-    int pagefd = -1;
-    pagefd = open(path, O_RDONLY);
+    int pagefd = open(path, O_RDONLY);
     return pagefd;
 }
 
@@ -59,20 +61,36 @@ struct url_node url_analysis(char* url)
 int route(char* url)
 {
     struct url_node url_processed = url_analysis(url);
-    std::cout << "file: " << url_processed.file << " |query: " << url_processed.query_string << " |fragment: " << url_processed.fragment << std::endl;
+    std::cout << "file: " << url_processed.file << "\t|query: " << url_processed.query_string << "\t|fragment: " << url_processed.fragment << std::endl;
     struct routenode* p = routelist;
     int pagefd = -1;
-    while(p != nullptr)
+    char path[256];
+    while(1)
     {
-        if(!strcmp(p->url, url_processed.file))
+        if(!strcmp(p->url, url_processed.file) || p->next == nullptr)
         {
-            char path[256];
             strcpy(path, SOURCE_PATH);
             strcat(path, p->path);
             pagefd = open_file(path);
-            return pagefd;
+            break;
         }
         p = p->next;
     }
-    return pagefd;
+    if(!strcmp(url_processed.file, "/"))
+    {
+        return pagefd;
+    }
+
+    int route_result = pagefd;
+    strcpy(path, SOURCE_PATH);
+    strcat(path, url_processed.file);
+    pagefd = open_file(path);
+    if(pagefd == -1)
+    {
+        return route_result;
+    }
+    else
+    {
+        return pagefd;
+    }
 }

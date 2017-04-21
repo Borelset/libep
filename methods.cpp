@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -9,6 +8,12 @@
 #include <math.h>
 #include "methods.h"
 #include "route.h"
+#include "epoll_process.h"
+
+#define METHODS_TYPE_LENGTH 10
+#define URL_LENGTH 256
+#define CONTENT_LENGTH 1024
+#define HEAD_LENGTH 1024
 
 struct methodnode methodlist[] =
 {
@@ -18,8 +23,13 @@ struct methodnode methodlist[] =
     {"OPTIONS", method_unimplement,   &methodlist[4]    },
     {"PUT",     method_unimplement,   &methodlist[5]    },
     {"DELETE",  method_unimplement,   &methodlist[6]    },
-    {"TARCE",   method_unimplement,   nullptr           }
+    {"TARCE",   method_unimplement,   &methodlist[7]    },
+    {"",        method_wrongmethod,   nullptr           }
 };
+
+char methods_type[METHODS_TYPE_LENGTH];
+char url[URL_LENGTH];
+char content[CONTENT_LENGTH];
 
 char* itoa(int num, char* addr)
 {
@@ -27,7 +37,7 @@ char* itoa(int num, char* addr)
     return addr;
 }
 
-int head_sender(int sock, int length, int status)
+int head_genarate(int epollfd, int fd, int length, int status, char* dest)
 {
     const char head_http[]          =   "HTTP/1.1 ";
     const char head_status_200[]    =   "200 OK\r\n";
@@ -60,92 +70,105 @@ int head_sender(int sock, int length, int status)
     strcat(buffer, head_length);
     strcat(buffer, head_end);
 
-    send(sock, buffer, strlen(buffer), 0);
+    strcpy(dest, buffer);
     return 0;
 }
 
-int not_found(int sock)
-{
-    const char buffer[] = "<html>"
-                          "<head><title>NOT FOUND</title></head>\r\n"
-                          "<body><p>The page your applied is not found.</p></body>\r\n"
-                          "</html>";
-    int length = strlen(buffer);
-
-    head_sender(sock, length, 404);
-    send(sock, buffer, strlen(buffer), 0);
-    return 0;
-}
-
-int method_get(int sock, char* url, char* content)
+int method_get(int epollfd, int fd, char* url, char* content)
 {
     std::cout << "receive a GET method request with a url: " << url << std::endl;
 
     int pagefd = route(url);
-    if(pagefd < 0)
-    {
-        not_found(sock);
-        return -1;
-    }
     struct stat statbuf;
     fstat(pagefd, &statbuf);
     int file_length = statbuf.st_size;
 
-    head_sender(sock, file_length, 200);
+    char head[HEAD_LENGTH];
+    head_genarate(epollfd, fd, file_length, 200, head);
 
-    char buffer[100];
-    while(read(pagefd, buffer, 100) != 0)
+    send_active(epollfd, fd, head, pagefd);
+    return 0;
+}
+
+int method_post(int epollfd, int fd, char* url, char* content)
+{
+
+}
+
+int method_unimplement(int epollfd, int fd, char* url, char* content)
+{
+    char unimt_path[] = "/unimplement_method";
+    std::cout << "receive an unimplement method request with a url: " << url << std::endl;
+
+    int pagefd = route(unimt_path);
+    struct stat statbuf;
+    fstat(pagefd, &statbuf);
+    int file_length = statbuf.st_size;
+
+    char head[HEAD_LENGTH];
+    head_genarate(epollfd, fd, file_length, 200, head);
+
+    send_active(epollfd, fd, head, pagefd);
+
+    return 0;
+}
+
+int method_wrongmethod(int epollfd, int fd, char* url, char* content)
+{
+    char wrong_path[] = "/wrong_method";
+    std::cout << "receive an unknown method request with a url: " << url << std::endl;
+
+    int pagefd = route(wrong_path);
+    struct stat statbuf;
+    fstat(pagefd, &statbuf);
+    int file_length = statbuf.st_size;
+
+    char head[HEAD_LENGTH];
+    head_genarate(epollfd, fd, file_length, 400, head);
+
+    send_active(epollfd, fd, head, pagefd);
+    return 0;
+}
+
+int request_process(char* request, int epollfd, int fd)
+{
+    memset(methods_type, '\0', METHODS_TYPE_LENGTH);
+
+    for(int i=0;i<METHODS_TYPE_LENGTH;i++)
     {
-        send(sock, buffer, strlen(buffer), 0);
+        if(*((char*)request + i) != ' ')
+        {
+            methods_type[i] = *((char*)request + i);
+        }
+    }
+    int st_length = strlen(methods_type);
+
+    memset(url, '\0', URL_LENGTH);
+    for(int i=0;i<URL_LENGTH;i++)
+    {
+        if(*((char*)request + st_length + 1 + i) != ' ')
+        {
+            url[i] = *((char*)request + st_length + 1 + i);
+        }
     }
 
-    close(pagefd);
+    memset(content, '\0', CONTENT_LENGTH);
+
+    method(epollfd, fd, methods_type, url, content);
+
     return 0;
 }
 
-int method_post(int sock, char* url, char* content)
-{
-
-}
-
-int method_unimplement(int sock, char* url, char* content)
-{
-    const char buffer[] = "<html>"
-                          "<head><title>unimplement method</title></head>\r\n"
-                          "<body><p>Method in your request has not been done in my server, sorry ..</p></body>\r\n"
-                          "</html>";
-    int length = strlen(buffer);
-
-    head_sender(sock, length, 200);
-    send(sock, buffer, strlen(buffer), 0);
-    return 0;
-}
-
-int method_wrongmethod(int sock, char* url, char* content)
-{
-    const char buffer[] = "<html>"
-                          "<head><title>bad request</title></head>\r\n"
-                          "<body><p>Your browser sent a bad request, such as a POST without a Content-Length.</p></body>\r\n"
-                          "</html>";
-    int length = strlen(buffer);
-
-    head_sender(sock, length, 400);
-    send(sock, buffer, strlen(buffer), 0);
-    return 0;
-}
-
-int method(char* method_type, int sock, char* url, char* content)
+int method(int epollfd, int fd, char* method_type, char* url, char* content)
 {
     struct methodnode* p = methodlist;
-    while(p != NULL)
+    while(1)
     {
-        if(!strcmp(p->name, method_type))
+        if(!strcmp(p->name, method_type)||p->next == nullptr)
         {
-            p->handle(sock, url, content);
+            p->handle(epollfd, fd, url, content);
             return 0;
         }
         p = p->next;
     }
-    method_wrongmethod(sock, url, content);
-    return -1;
 }

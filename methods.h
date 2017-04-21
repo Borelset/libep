@@ -1,17 +1,17 @@
 #ifndef METHODS_H
 #define METHODS_H
 
-int methodnode_list_init();
-int method_get(int sock, char* url, char* content);
-int method_post(int sock, char* url, char* content);
-int method_unimplement(int sock, char* url, char* content);
-int method_wrongmethod(int sock, char* url, char* content);
-int method(char* method_type, int sock, char* url, char* content);
+int method_get(int epollfd, int fd, char* url, char* content);
+int method_post(int epollfd, int fd, char* url, char* content);
+int method_unimplement(int epollfd, int fd, char* url, char* content);
+int method_wrongmethod(int epollfd, int fd, char* url, char* content);
+int method(int epollfd, int fd, char* method_type, char* url, char* content);
+int request_process(char* request, int epollfd, int fd);
 
 struct methodnode
 {
     char name[10];
-    int (*handle)(int, char*, char*);
+    int (*handle)(int, int, char*, char*);
     struct methodnode* next;
 };
 
