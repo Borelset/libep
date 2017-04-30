@@ -46,13 +46,11 @@ thread_pool::~thread_pool()
 
 int thread_pool::run(void* (*task)(void *), void *arg)
 {
-    cout << "now count = " << count << endl;
     for(int i=0;i<MAX_THREAD;i++)
     {
         pthread_mutex_lock(&mutex);
         if(thread_list[i].tag == 0)
         {
-            cout << "thread " << i << " at your service\n";
             thread_list[i].task = task;
             thread_list[i].arg = arg;
             thread_list[i].tag = 1;
@@ -90,7 +88,6 @@ void *thread_loop(void * arg)
 
 void *thread_exit(void *)
 {
-    cout << "thread exit\n";
     pthread_exit(0);
     return nullptr;
 }
