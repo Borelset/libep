@@ -4,12 +4,9 @@
 
 using namespace std;
 
-pthread_mutex_t* mutex_ptr;
-
 thread_pool::thread_pool()
 {
     pthread_mutex_init(&mutex, nullptr);
-    mutex_ptr = &mutex;
 
     for(int i=0;i<MAX_THREAD;i++)
     {
@@ -55,12 +52,10 @@ int thread_pool::run(void* (*task)(void *), void *arg)
             thread_list[i].arg = arg;
             thread_list[i].tag = 1;
             pthread_mutex_unlock(&mutex);
-            count++;
             return 0;
         }
         pthread_mutex_unlock(&mutex);
     }
-    getchar();
     return -1;
 }
 
@@ -81,7 +76,6 @@ void *thread_loop(void * arg)
             thi->pool->thread_list[thi->order].task = nullptr;
             thi->pool->thread_list[thi->order].tag = 0;
             pthread_mutex_unlock(&thi->pool->mutex);
-            thi->pool->count--;
         }
     }
 }

@@ -148,15 +148,15 @@ void epoll_process(int epollfd, struct epoll_event* event, int num, int listenfd
         struct process_arg* arg = new struct process_arg(epollfd, event_fd);
         if((event_fd == listenfd) && (event[i].events & EPOLLIN))
         {
-            th_p.run(accept_process, (void*)arg);
+            while(th_p.run(accept_process, (void*)arg) < 0);
         }
         else if(event[i].events & EPOLLIN)
         {
-            th_p.run(recv_process, (void*)arg) < 0;
+            while(th_p.run(recv_process, (void*)arg) < 0);
         }
         else if(event[i].events & EPOLLOUT)
         {
-            th_p.run(send_process, (void*)arg) < 0;
+            while(th_p.run(send_process, (void*)arg) < 0);
         }
     }
 }
