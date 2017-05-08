@@ -66,7 +66,9 @@ void *thread_loop(void * arg)
         pthread_mutex_lock(&thi->pool->thread_list[thi->order].mutex);
         if(thi->pool->thread_list[thi->order].task == nullptr)
         {
-
+            thi->pool->thread_list[thi->order].arg = nullptr;
+            thi->pool->idle_list.push_back(&thi->pool->thread_list[thi->order]);
+            sem_post(&thi->pool->idle_sem);
         }
         else
         {
