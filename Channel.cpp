@@ -3,6 +3,7 @@
 //
 
 #include "Channel.h"
+#include "EventManager.h"
 
 void Channel::process() {
     if(mRevent & EpollReadEvent)

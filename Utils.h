@@ -8,6 +8,8 @@
 #include <sys/epoll.h>
 #include <iostream>
 #include <ostream>
+#include <syscall.h>
+#include <zconf.h>
 
 
 const int EpollSize = 200;
@@ -24,5 +26,15 @@ enum EpollEvent{
     EpollWriteEvent = EPOLLOUT,
     EpollErrorEvent = EPOLLERR
 };
+
+static time_t getTime(){
+    time_t time_;
+    time(&time_);
+    return time_;
+}
+
+static pid_t getTid(){
+    return syscall(SYS_gettid);
+}
 
 #endif //NETMODEL_UTILS_H

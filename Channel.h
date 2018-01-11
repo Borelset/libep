@@ -7,7 +7,8 @@
 
 #include <functional>
 #include "Utils.h"
-#include "EventManager.h"
+
+class EventManager;
 
 class Channel{
 public:

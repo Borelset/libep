@@ -10,8 +10,11 @@
 class Timer{
 public:
     typedef std::function<void()> TimerCallback;
-    Timer(TimerCallback& timerCallback, time_t time, int interval);
+    Timer(const TimerCallback& timerCallback, time_t time, int interval);
     void run();
+    bool isRepeat();
+    Timer* getRepeat();
+    time_t getStartTime();
 private:
     TimerCallback mTimerCallback;
     int mInterval;
