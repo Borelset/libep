@@ -1,16 +1,21 @@
 #include <iostream>
 #include <fcntl.h>
 #include <zconf.h>
-#include "Channel.h"
-#include "EpollHandler.h"
-#include "EventManager.h"
-#include "TimerQueue.h"
+#include "ep/Channel.h"
+#include "ep/EpollHandler.h"
+#include "ep/EventManager.h"
+#include "ep/TimerQueue.h"
+#include "ep/CurrentThread.h"
 #include <pthread.h>
 #include <sys/timerfd.h>
 #include <string.h>
 #include <syscall.h>
+#include "ep/Thread.h"
+#include "ep/EventManagerThread.h"
 
 int fd;
+
+using namespace ep;
 
 void testRead(){
     //std::string buffer;
@@ -23,27 +28,33 @@ void testWrite(){
 }
 
 void* thread(void* em){
-    __thread pid_t threadId = getTid();
-    std::cout << "thread1:" << threadId << std::endl;
+    sleep(5);
     EventManager* eventManager = (EventManager*)em;
     //eventManager->runAfter(testWrite, 5, 0);
-    std::cout << "thread:" << eventManager->isNativeThread(threadId) << std::endl;
-    std::cout << "thread::done" << std::endl;
+    std::cout << "thread:" << CurrentThread::gettid() << " compare:" << eventManager->isLocalThread() << std::endl;
+    std::function<void()> test = std::bind(&EventManager::runAfter, eventManager, testRead,  1, 0);
+    eventManager->runInLoop(test);
 }
 
 
 int main() {
     std::cout << getpid() << std::endl;
 
-    EventManager eventManager(getTid());
+    EventManagerThread eventManagerThread;
+    eventManagerThread.start();
     pthread_t pthread;
-    pthread_create(&pthread, nullptr, thread, &eventManager);
-    sleep(5);
-    //eventManager.runAfter(testRead, 5, 0);
-    //eventManager.runAt(testRead, 10+getTime(), 0);
-    //timerQueue.testChannelCallback();
+    std::cout << "main:" << CurrentThread::gettid() << std::endl;
+    std::function<void()> testcallback = std::bind(&EventManager::runAfter, eventManagerThread.getEventManagerHandler(), testRead, 1, 1);
+    std::function<void()> testcallback2 = std::bind(&EventManager::runInLoop, eventManagerThread.getEventManagerHandler(), testcallback);
+    ep::Thread testThread(testcallback2);
+    testThread.run();
+    //pthread_create(&pthread, nullptr, thread, &eventManager);
 
-    //eventManager.loop();
+    //eventManager.runAfter(testRead, 5, 0);
+    //eventManager.runAfter(testRead, 10, 0);
+    //eventManager.runAfter(testRead, 15, 0);
+    //eventManager.runAt(testRead, 10+getTime(), 1);
+    sleep(1000);
     return 0;
 
 }

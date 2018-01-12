@@ -6,6 +6,8 @@
 #include "Timer.h"
 #include "Utils.h"
 
+using namespace ep;
+
 Timer::Timer(const TimerCallback &timerCallback, time_t time, int interval):
         mTimerCallback(timerCallback),
         mStartTime(time),

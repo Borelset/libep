@@ -6,6 +6,7 @@
 #include <iostream>
 #include "EpollHandler.h"
 
+using namespace ep;
 
 EpollHandler::EpollHandler() {
     mEpollFd = epoll_create(EpollSize);

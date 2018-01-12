@@ -5,6 +5,8 @@
 #include "Channel.h"
 #include "EventManager.h"
 
+using namespace ep;
+
 void Channel::process() {
     if(mRevent & EpollReadEvent)
         mReadCallback();
@@ -93,6 +95,3 @@ void Channel::setEvent(int event) {
     mEvent = event;
     update();
 }
-
-
-

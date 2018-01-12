@@ -2,10 +2,13 @@
 // Created by borelset on 1/3/18.
 //
 #include "Mutex.h"
+#include "CurrentThread.h"
+
+using namespace ep;
 
 void MutexLock::lock(){
     pthread_mutex_lock(&mMutex);
-    mHolder = pthread_self();
+    mHolder = CurrentThread::gettid();
 }
 
 void MutexLock::unlock() {
@@ -29,7 +32,7 @@ MutexLock::~MutexLock(){
 }
 
 bool MutexLock::isLockByThisThread() {
-    return mHolder == pthread_self();
+    return mHolder == CurrentThread::gettid();
 }
 
 MutexLockGuard::MutexLockGuard(MutexLock &mutex):mMutexLock(mutex){
