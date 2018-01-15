@@ -8,9 +8,9 @@
 #include <functional>
 #include "Utils.h"
 
-class EventManager;
-
 namespace ep{
+    class EventManager;
+
     class Channel{
     public:
         typedef std::function<void()> EventCallback;

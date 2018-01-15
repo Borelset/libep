@@ -27,15 +27,6 @@ void testWrite(){
     std::cout << "hello write!" << std::endl;
 }
 
-void* thread(void* em){
-    sleep(5);
-    EventManager* eventManager = (EventManager*)em;
-    //eventManager->runAfter(testWrite, 5, 0);
-    std::cout << "thread:" << CurrentThread::gettid() << " compare:" << eventManager->isLocalThread() << std::endl;
-    std::function<void()> test = std::bind(&EventManager::runAfter, eventManager, testRead,  1, 0);
-    eventManager->runInLoop(test);
-}
-
 
 int main() {
     std::cout << getpid() << std::endl;
@@ -45,8 +36,7 @@ int main() {
     pthread_t pthread;
     std::cout << "main:" << CurrentThread::gettid() << std::endl;
     std::function<void()> testcallback = std::bind(&EventManager::runAfter, eventManagerThread.getEventManagerHandler(), testRead, 1, 1);
-    std::function<void()> testcallback2 = std::bind(&EventManager::runInLoop, eventManagerThread.getEventManagerHandler(), testcallback);
-    ep::Thread testThread(testcallback2);
+    ep::Thread testThread(testcallback);
     testThread.run();
     //pthread_create(&pthread, nullptr, thread, &eventManager);
 

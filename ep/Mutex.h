@@ -8,10 +8,10 @@
 #include <iostream>
 #include "pthread.h"
 
-class MutexLockGuard;
-class Condition;
-
 namespace ep{
+    class MutexLockGuard;
+    class Condition;
+
     class MutexLock{
     private:
         pthread_mutex_t mMutex;

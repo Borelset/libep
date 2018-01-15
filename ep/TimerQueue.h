@@ -20,7 +20,7 @@ namespace ep{
         TimerQueue(EventManager* eventManager);
         std::vector<Entry> getExpired(time_t now);
         void handleRead();
-        bool addTimer(Timer* timer);
+        bool addTimerInQueue(Timer *timer);
         bool addTimer(const TimerCallback& timerCallback, time_t time, int interval);
         void resetTimerFd(time_t time);
     private:

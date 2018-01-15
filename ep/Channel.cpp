@@ -95,3 +95,4 @@ void Channel::setEvent(int event) {
     mEvent = event;
     update();
 }
+

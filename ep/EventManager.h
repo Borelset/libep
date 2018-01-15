@@ -11,10 +11,11 @@
 #include "TimerQueue.h"
 #include "Mutex.h"
 
-class Channel;
-class EpollHandler;
 
 namespace ep{
+    class Channel;
+    class EpollHandler;
+
     class EventManager{
     public:
         typedef std::vector<Channel*> ChannelList;

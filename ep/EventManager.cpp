@@ -8,6 +8,8 @@
 #include "CurrentThread.h"
 #include <sys/eventfd.h>
 
+using namespace ep;
+
 EventManager::EventManager():
         mEpollHandlerPtr(new EpollHandler()),
         mQuit(true),

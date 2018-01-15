@@ -49,7 +49,7 @@ void TimerQueue::handleRead() {
         it->second->run();
         if(it->second->isRepeat()){
             Timer* repeatTimer = it->second->getRepeat();
-            addTimer(repeatTimer);
+            addTimerInQueue(repeatTimer);
         }else{
             delete it->second;
         }
@@ -57,7 +57,7 @@ void TimerQueue::handleRead() {
 }
 
 
-bool TimerQueue::addTimer(Timer *timer) {
+bool TimerQueue::addTimerInQueue(Timer *timer) {
     Entry newEntry = std::make_pair(timer->getStartTime(), timer);
 
     if(mTimerList.begin()->first > timer->getStartTime() || mTimerList.empty()){
@@ -70,10 +70,14 @@ bool TimerQueue::addTimer(Timer *timer) {
     }
 }
 
-bool TimerQueue::addTimer(const TimerQueue::TimerCallback &timerCallback, time_t time, int interval) {
+bool TimerQueue::addTimer(const TimerQueue::TimerCallback &timerCallback,
+                          time_t time,
+                          int interval) {
     time_t now = getTime();
     Timer* newTimer = new Timer(timerCallback, time+now, interval);
-    return addTimer(newTimer);
+    TimerCallback added = std::bind(&TimerQueue::addTimerInQueue, this, newTimer);
+    mEventManager->runInLoop(added);
+    return true;
 }
 
 void TimerQueue::resetTimerFd(time_t time) {
