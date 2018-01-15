@@ -8,20 +8,20 @@
 
 using namespace ep;
 
-EpollHandler::EpollHandler() {
-    mEpollFd = epoll_create(EpollSize);
-    mEpollEvent.resize(1);
+EpollHandler::EpollHandler():
+    mEpollFd(epoll_create(EpollSize))
+{
+    mEpollEvent.resize(1); //default size is 0, resulting epoll_wait skiped
 }
 
 EpollHandler::~EpollHandler() {
-    close(mEpollFd);
 }
 
 time_t EpollHandler::epoll(int timeout, EpollHandler::ChannelList* channelList) {
-    int eventNum = epoll_wait(mEpollFd,
+    int eventNum = epoll_wait(mEpollFd.getFd(),
                               mEpollEvent.data(),
                               (int)mEpollEvent.size(),
-                              -1);
+                              timeout);
     if(eventNum > 0){
         activeEventCollector(eventNum, channelList);
         if(eventNum == (int)mEpollEvent.size()){
@@ -66,5 +66,5 @@ void EpollHandler::epollCtlManager(int operate, Channel * channel) {
     bzero(&event, sizeof(struct epoll_event));
     event.events = (uint32_t)channel->getEvent();
     event.data.ptr = channel;
-    epoll_ctl(mEpollFd, operate, channel->getFd(), &event);
+    epoll_ctl(mEpollFd.getFd(), operate, channel->getFd(), &event);
 }

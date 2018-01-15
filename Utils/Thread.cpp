@@ -6,7 +6,7 @@
 #include "Thread.h"
 #include "CurrentThread.h"
 
-using namespace ep;
+using namespace Utils;
 
 Thread::Thread(const std::function<void()> &callback):
         mCallback(callback),
@@ -37,6 +37,11 @@ Thread::Callback Thread::getCallback() {
     return mCallback;
 }
 
+pid_t Thread::getTid() {
+    return mTid;
+}
+
 void Thread::setTid(pid_t tid) {
     mTid = tid;
 }
+

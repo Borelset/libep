@@ -2,17 +2,19 @@
 // Created by borelset on 1/3/18.
 //
 
-#ifndef MULTITHREAD_MUTEX_H
-#define MULTITHREAD_MUTEX_H
+#ifndef LIBEP_UTILS_UTILS_MUTEX_H
+#define LIBEP_UTILS_UTILS_MUTEX_H
 
 #include <iostream>
 #include "pthread.h"
+#include "../ep/epollUtils.h"
+#include "noncopyable.h"
 
-namespace ep{
+namespace Utils{
     class MutexLockGuard;
     class Condition;
 
-    class MutexLock{
+    class MutexLock : noncopyable{
     private:
         pthread_mutex_t mMutex;
         pid_t mHolder;
@@ -29,7 +31,7 @@ namespace ep{
         bool isLockByThisThread();
     };
 
-    class MutexLockGuard{
+    class MutexLockGuard : noncopyable{
     private:
         MutexLock& mMutexLock;
     public:
@@ -37,7 +39,7 @@ namespace ep{
         ~MutexLockGuard();
     };
 
-    class Condition{
+    class Condition : noncopyable{
     private:
         MutexLock& mMutexLock;
         pthread_cond_t mCond;
@@ -52,4 +54,4 @@ namespace ep{
 
 
 
-#endif //MULTITHREAD_MUTEX_H
+#endif //LIBEP_UTILS__MUTEX_H

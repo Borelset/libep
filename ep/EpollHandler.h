@@ -2,16 +2,17 @@
 // Created by borelset on 1/10/18.
 //
 
-#ifndef NETMODEL_EPOLLER_H
-#define NETMODEL_EPOLLER_H
+#ifndef LIBEP_EP_EPOLLER_H
+#define LIBEP_EP_EPOLLER_H
 
 #include <ctime>
 #include <vector>
 #include <map>
 #include "Channel.h"
+#include "../Utils/FD.h"
 
 namespace ep{
-    class EpollHandler{
+    class EpollHandler : Utils::noncopyable{
     public:
         typedef std::vector<Channel*> ChannelList;
         typedef std::map<int, Channel*> ChannelMap;
@@ -21,7 +22,7 @@ namespace ep{
         time_t epoll(int, ChannelList*);
         void updateChannel(Channel *);
     private:
-        int mEpollFd;
+        Utils::FD mEpollFd;
         ChannelMap mChannelMap;
         EpollEventList mEpollEvent;
 
@@ -31,4 +32,4 @@ namespace ep{
 }
 
 
-#endif //NETMODEL_EPOLLER_H
+#endif //LIBEP_EP_EPOLLER_H

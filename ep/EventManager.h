@@ -2,21 +2,21 @@
 // Created by borelset on 1/10/18.
 //
 
-#ifndef NETMODEL_EVENTMANAGER_H
-#define NETMODEL_EVENTMANAGER_H
+#ifndef LIBEP_EP_EVENTMANAGER_H
+#define LIBEP_EP_EVENTMANAGER_H
 
 #include <bits/unique_ptr.h>
 #include <vector>
 #include <functional>
 #include "TimerQueue.h"
-#include "Mutex.h"
+#include "../Utils/Mutex.h"
 
 
 namespace ep{
     class Channel;
     class EpollHandler;
 
-    class EventManager{
+    class EventManager : Utils::noncopyable{
     public:
         typedef std::vector<Channel*> ChannelList;
         typedef std::function<void()> Callback;
@@ -36,8 +36,8 @@ namespace ep{
         TimerQueue mTimerQueue;
         const pid_t mThreadId;
         CallbackList mCallbackQueue;
-        MutexLock mMutexLock;
-        int mEventFd;
+        Utils::MutexLock mMutexLock;
+        Utils::FD mEventFd;
         Channel mWakeupChannel;
         bool mEventfdCallbackProcessing;
 
@@ -49,4 +49,4 @@ namespace ep{
 }
 
 
-#endif //NETMODEL_EVENTMANAGER_H
+#endif //LIBEP_EP_EVENTMANAGER_H

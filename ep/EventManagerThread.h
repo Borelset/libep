@@ -2,28 +2,29 @@
 // Created by borelset on 1/12/18.
 //
 
-#ifndef NETMODEL_EVENTLOOPTHREAD_H
-#define NETMODEL_EVENTLOOPTHREAD_H
+#ifndef LIBEP_EP_EVENTLOOPTHREAD_H
+#define LIBEP_EP_EVENTLOOPTHREAD_H
 
-#include "Thread.h"
+#include "../Utils/Thread.h"
 #include "EventManager.h"
 
 namespace ep{
-    class EventManagerThread{
+    class EventManagerThread : Utils::noncopyable{
     public:
         EventManagerThread();
         ~EventManagerThread();
         void start();
         EventManager* getEventManagerHandler();
     private:
-        ep::Thread mThread;
+        Utils::Thread mThread;
         EventManager* mEventManager;
-        MutexLock mMutexLock;
-        Condition mCondition;
+        Utils::MutexLock mMutexLock;
+        Utils::Condition mCondition;
+        pid_t mTid;
 
         void threadFunction();
     };
 }
 
 
-#endif //NETMODEL_EVENTLOOPTHREAD_H
+#endif //LIBEP_EP_EVENTLOOPTHREAD_H

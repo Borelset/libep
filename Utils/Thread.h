@@ -2,14 +2,16 @@
 // Created by borelset on 1/12/18.
 //
 
-#ifndef NETMODEL_THREAD_H
-#define NETMODEL_THREAD_H
+#ifndef LIBEP_UTILS_THREAD_H
+#define LIBEP_UTILS_THREAD_H
 
 #include <zconf.h>
 #include <functional>
+#include "../ep/epollUtils.h"
+#include "noncopyable.h"
 
-namespace ep{
-    class Thread{
+namespace Utils{
+    class Thread : Utils::noncopyable{
     public:
         typedef std::function<void()> Callback;
         Thread(const Callback& callback);
@@ -19,6 +21,7 @@ namespace ep{
         bool isRunning();
         Callback getCallback();
         void setTid(pid_t tid);
+        pid_t getTid();
     private:
         pthread_t mPid;
         bool mIsRunning;
@@ -29,4 +32,4 @@ namespace ep{
 }
 
 
-#endif //NETMODEL_THREAD_H
+#endif //LIBEP_UTILS_THREAD_H

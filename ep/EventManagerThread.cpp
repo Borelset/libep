@@ -3,13 +3,15 @@
 //
 
 #include "EventManagerThread.h"
+#include "../Utils/CurrentThread.h"
 
 using namespace ep;
 
 EventManagerThread::EventManagerThread():
         mThread(std::bind(&EventManagerThread::threadFunction, this)),
         mEventManager(nullptr),
-        mCondition(mMutexLock)
+        mCondition(mMutexLock),
+        mTid(mThread.getTid())
 {
 
 }
@@ -21,7 +23,7 @@ EventManagerThread::~EventManagerThread() {
 void EventManagerThread::start() {
     mThread.run();
     {
-        MutexLockGuard localGuard(mMutexLock);
+        Utils::MutexLockGuard localGuard(mMutexLock);
         mCondition.wait();
     }
 }
@@ -34,10 +36,9 @@ EventManager *EventManagerThread::getEventManagerHandler() {
 void EventManagerThread::threadFunction() {
     EventManager eventManager;
     {
-        MutexLockGuard localGuard(mMutexLock);
+        Utils::MutexLockGuard localGuard(mMutexLock);
         mEventManager = &eventManager;
         mCondition.notify();
     }
     eventManager.loop();
-
 }

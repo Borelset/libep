@@ -5,7 +5,7 @@
 #include "EventManager.h"
 #include "EpollHandler.h"
 #include "TimerQueue.h"
-#include "CurrentThread.h"
+#include "../Utils/CurrentThread.h"
 #include <sys/eventfd.h>
 
 using namespace ep;
@@ -14,9 +14,9 @@ EventManager::EventManager():
         mEpollHandlerPtr(new EpollHandler()),
         mQuit(true),
         mTimerQueue(this),
-        mThreadId(CurrentThread::gettid()),
+        mThreadId(Utils::CurrentThread::gettid()),
         mEventFd(eventfd(0, EFD_NONBLOCK|EFD_CLOEXEC)),
-        mWakeupChannel(this, mEventFd),
+        mWakeupChannel(this, mEventFd.getFd()),
         mEventfdCallbackProcessing(false)
 {
     mWakeupChannel.setReadCallback(std::bind(&EventManager::handleRead, this));
@@ -31,8 +31,9 @@ void EventManager::loop() {
     ChannelList wakedChannel;
     while(mQuit){
         wakedChannel.clear();
-        mEpollHandlerPtr->epoll(100, &wakedChannel);
-        for(ChannelList::iterator it = wakedChannel.begin();
+        //-1 for infinity wait
+        mEpollHandlerPtr->epoll(-1, &wakedChannel);
+        for(auto it = wakedChannel.begin();
                 it != wakedChannel.end();
                 it++){
             (*it)->process();
@@ -54,9 +55,9 @@ void EventManager::setQuit() {
 void EventManager::runAt(std::function<void()> Callback,
                          time_t when,
                          int interval) {
-    time_t time_ = getTime();
+    time_t time_ = Utils::getTime();
     if(when - time_ > 0)
-        mTimerQueue.addTimer(Callback, when-getTime(), interval);
+        mTimerQueue.addTimer(Callback, when-Utils::getTime(), interval);
     else
         std::cout << "EventManger::runAt() invalid param"
                   << std::endl
@@ -75,7 +76,12 @@ void EventManager::runAfter(std::function<void()> Callback,
 }
 
 bool EventManager::isLocalThread() {
-    return mThreadId == CurrentThread::gettid();
+    bool result = mThreadId == Utils::CurrentThread::gettid();
+    if(!result){
+        std::cout << "EventManager::runInLoop==>"
+                  << "EventManager created in:" << mThreadId << "isLocalThread called in:" << Utils::CurrentThread::gettid() << std::endl;
+    }
+    return result;
 }
 
 void EventManager::runInLoop(const EventManager::Callback &callback) {
@@ -83,14 +89,14 @@ void EventManager::runInLoop(const EventManager::Callback &callback) {
         callback();
     }else{
         std::cout << "EventManager::runInLoop==>"
-                  << "called by foreign thread:" << CurrentThread::gettid() << std::endl;
+                  << "called by foreign thread:" << Utils::CurrentThread::gettid() << std::endl;
         queueInLoop(callback);
     }
 }
 
 void EventManager::queueInLoop(const EventManager::Callback &callback) {
     {
-        MutexLockGuard localGuard(mMutexLock);
+        Utils::MutexLockGuard localGuard(mMutexLock);
         mCallbackQueue.push_back(callback);
     }
 
@@ -100,14 +106,14 @@ void EventManager::queueInLoop(const EventManager::Callback &callback) {
 
 void EventManager::handleRead() {
     uint64_t many;
-    read(mEventFd, &many, sizeof many);
+    read(mEventFd.getFd(), &many, sizeof many);
     std::cout << "EventManager::handleRead==>"
               << "Eventfd found " << many << " item(s)" << std::endl;
 }
 
 void EventManager::wakeup() {
     uint64_t one = 1;
-    write(mEventFd, &one, sizeof one);
+    write(mEventFd.getFd(), &one, sizeof one);
     std::cout << "EventManager::wakeup==>"
               << "send a signal to wakeup" << std::endl;
 }
@@ -118,7 +124,7 @@ void EventManager::eventfdCallbackProcess() {
     mEventfdCallbackProcessing = true;
     CallbackList callbackList;
     {
-        MutexLockGuard localGuard(mMutexLock);
+        Utils::MutexLockGuard localGuard(mMutexLock);
         mCallbackQueue.swap(callbackList);
     }
 

@@ -4,6 +4,7 @@
 
 #include "EventManager.h"
 #include "TimerQueue.h"
+#include "../Utils/Utils.h"
 #include <sys/timerfd.h>
 #include <string.h>
 #include <zconf.h>
@@ -20,7 +21,7 @@ int createTimerFd(){
 TimerQueue::TimerQueue(EventManager *eventManager):
         mEventManager(eventManager),
         mTimerFd(createTimerFd()),
-        mTimerQueueChannel(eventManager, mTimerFd)
+        mTimerQueueChannel(eventManager, mTimerFd.getFd())
 {
     mTimerQueueChannel.setReadCallback(std::bind(&TimerQueue::handleRead, this));
     mTimerQueueChannel.enableRead();
@@ -35,16 +36,16 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(time_t now) {
     std::cout << "TimerQueue::getExpired==>"
               << "Found " << result.size() << " items, and left " << mTimerList.size() << std::endl;
     if(!mTimerList.empty())
-        resetTimerFd(mTimerList.begin()->first - getTime());
+        resetTimerFd(mTimerList.begin()->first - Utils::getTime());
     return result;
 }
 
 void TimerQueue::handleRead() {
     uint64_t many;
-    read(mTimerFd, &many, sizeof many);
+    read(mTimerFd.getFd(), &many, sizeof many);
     std::cout << "TimerQueue::handleRead==>"
               << "There is " << many << " timer(s) time out" << std::endl;
-    std::vector<Entry> timeout = getExpired(getTime());
+    std::vector<Entry> timeout = getExpired(Utils::getTime());
     for(auto it = timeout.begin(); it != timeout.end(); it++){
         it->second->run();
         if(it->second->isRepeat()){
@@ -61,7 +62,7 @@ bool TimerQueue::addTimerInQueue(Timer *timer) {
     Entry newEntry = std::make_pair(timer->getStartTime(), timer);
 
     if(mTimerList.begin()->first > timer->getStartTime() || mTimerList.empty()){
-        resetTimerFd(timer->getStartTime() - getTime());
+        resetTimerFd(timer->getStartTime() - Utils::getTime());
         mTimerList.insert(newEntry);
         return true;
     }else{
@@ -73,7 +74,7 @@ bool TimerQueue::addTimerInQueue(Timer *timer) {
 bool TimerQueue::addTimer(const TimerQueue::TimerCallback &timerCallback,
                           time_t time,
                           int interval) {
-    time_t now = getTime();
+    time_t now = Utils::getTime();
     Timer* newTimer = new Timer(timerCallback, time+now, interval);
     TimerCallback added = std::bind(&TimerQueue::addTimerInQueue, this, newTimer);
     mEventManager->runInLoop(added);
@@ -84,7 +85,10 @@ void TimerQueue::resetTimerFd(time_t time) {
     struct itimerspec now;
     bzero(&now, sizeof(itimerspec));
     now.it_value.tv_sec = time;
-    timerfd_settime(mTimerFd, 0, &now, nullptr);
+    timerfd_settime(mTimerFd.getFd(), 0, &now, nullptr);
     std::cout << "TimerQueue::resetTimerFd==>"
               << "set alert after " << time << "second(s)" << std::endl;
+}
+
+TimerQueue::~TimerQueue() {
 }

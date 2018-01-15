@@ -2,8 +2,8 @@
 // Created by borelset on 1/10/18.
 //
 
-#ifndef NETMODEL_UTILS_H
-#define NETMODEL_UTILS_H
+#ifndef LIBEP_EP_EPOLLUTILS_H
+#define LIBEP_EP_EPOLLUTILS_H
 
 #include <sys/epoll.h>
 #include <iostream>
@@ -26,18 +26,8 @@ namespace ep{
         EpollWriteEvent = EPOLLOUT,
         EpollErrorEvent = EPOLLERR
     };
-
-    static time_t getTime(){
-        time_t time_;
-        time(&time_);
-        return time_;
-    }
-
-    static pid_t getTid(){
-        return syscall(SYS_gettid);
-    }
 }
 
 
 
-#endif //NETMODEL_UTILS_H
+#endif //LIBEP_EP_EPOLLUTILS_H

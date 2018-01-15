@@ -2,16 +2,17 @@
 // Created by borelset on 1/10/18.
 //
 
-#ifndef NETMODEL_PROCESSOR_H
-#define NETMODEL_PROCESSOR_H
+#ifndef LIBEP_EP_CHANNEL_H
+#define LIBEP_EP_CHANNEL_H
 
 #include <functional>
-#include "Utils.h"
+#include "epollUtils.h"
+#include "../Utils/noncopyable.h"
 
 namespace ep{
     class EventManager;
 
-    class Channel{
+    class Channel : Utils::noncopyable{
     public:
         typedef std::function<void()> EventCallback;
         Channel(EventManager*, int);
@@ -51,4 +52,4 @@ namespace ep{
 
 
 
-#endif //NETMODEL_PROCESSOR_H
+#endif //LIBEP_EP_CHANNEL_H

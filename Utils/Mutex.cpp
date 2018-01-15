@@ -4,7 +4,7 @@
 #include "Mutex.h"
 #include "CurrentThread.h"
 
-using namespace ep;
+using namespace Utils;
 
 void MutexLock::lock(){
     pthread_mutex_lock(&mMutex);
