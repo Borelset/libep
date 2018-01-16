@@ -11,18 +11,29 @@
 #include "TCPConnection.h"
 
 namespace NetModule{
-    class TCPServer{
+    class TCPServer : Utils::noncopyable{
     public:
         typedef std::map<std::string, std::shared_ptr<TCPConnection>> ConnectionMap;
+        typedef std::function<void(TCPConnection&)> ConnectionCallback;
+        typedef std::function<void(std::weak_ptr<TCPConnection>, char*, int)> MessageCallback;
+
         TCPServer(int port);
         ~TCPServer();
         void start();
-        void setListenCallback(const std::function<void(int, SockAddr)>&);
-        void setMessageCallback(const std::funcion);
+        void setConnectionCallback(const ConnectionCallback&);
+        void setMessageCallback(const MessageCallback&);
+        void removeConnection(std::shared_ptr<TCPConnection>);
     private:
         ep::EventManager mEventManager;
         Acceptor mAcceptor;
         ConnectionMap mConnectionMap;
+        const std::string mConnName;
+        int mNextConnId;
+        SockAddr mLocalAddr;
+        MessageCallback mMessageCallback;
+        ConnectionCallback mConnectionCallback;
+
+        void newConnection(int fd, SockAddr& addr);
     };
 }
 

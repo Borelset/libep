@@ -13,12 +13,13 @@ namespace NetModule{
     class Acceptor{
     public:
         typedef std::function<void(int, SockAddr&)> ConnectionCallback;
-        Acceptor(std::weak_ptr<ep::EventManager> eventManager, int port);
+        Acceptor(ep::EventManager* eventManager, int port);
         void setListonCallback(const ConnectionCallback& connectionCallback);
         bool isListening() const;
         void listen();
+        struct sockaddr_in getLocalAddr();
     private:
-        std::weak_ptr<ep::EventManager> mEventManager;
+        ep::EventManager* mEventManager;
         Socket mSocket;
         ep::Channel mListenChannel;
         ConnectionCallback mListenCallback;

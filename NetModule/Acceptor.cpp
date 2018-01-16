@@ -4,11 +4,12 @@
 
 #include "Socket.h"
 #include "Acceptor.h"
+#include "netUtils.h"
 
-NetModule::Acceptor::Acceptor(std::weak_ptr<ep::EventManager> eventManager, int port):
+NetModule::Acceptor::Acceptor(ep::EventManager* eventManager, int port):
         mEventManager(eventManager),
         mSocket(),
-        mListenChannel(mEventManager.lock().get(), mSocket.getSocket()),
+        mListenChannel(mEventManager, mSocket.getSocket()),
         mListening(false)
 {
     mSocket.bindAddr("127.0.0.1", port);
@@ -22,7 +23,7 @@ void NetModule::Acceptor::listen() {
 }
 
 void NetModule::Acceptor::handleAccept() {
-    if(!mEventManager.lock().get()->isLocalThread()){
+    if(!mEventManager->isLocalThread()){
         std::cout << "NetModule::Acceptor::handleAccept=>>"
                   << "called out of local thread and force exit" << std::endl;
         return;
@@ -43,4 +44,8 @@ void NetModule::Acceptor::setListonCallback(const NetModule::Acceptor::Connectio
 
 bool NetModule::Acceptor::isListening() const {
     return mListening;
+}
+
+struct sockaddr_in NetModule::Acceptor::getLocalAddr() {
+    return NetModule::getLocalAddr(mSocket.getSocket());
 }

@@ -22,9 +22,10 @@ namespace ep{
 
     enum EpollEvent{
         EpollNoneEvent = 0,
-        EpollReadEvent = EPOLLIN,
+        EpollReadEvent = EPOLLIN | EPOLLPRI | EPOLLHUP,
         EpollWriteEvent = EPOLLOUT,
-        EpollErrorEvent = EPOLLERR
+        EpollErrorEvent = EPOLLERR,
+        EpollCloseEvent = EPOLLHUP
     };
 }
 

@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include "NetModule/SockAddr.h"
 #include "NetModule/Acceptor.h"
+#include "NetModule/TCPServer.h"
 
 int fd;
 
@@ -21,6 +22,11 @@ void testWrite(){
 void callback(int fd, NetModule::SockAddr addr){
     std::cout << "received!! fd:" << fd << " addr:" << inet_ntoa(addr.getAddr().sin_addr) << " " << addr.getAddr().sin_port << std::endl;
     char buffer[] = "hello!";
+}
+
+void messagecallback(std::weak_ptr<NetModule::TCPConnection> tcpc, char* buf, int n){
+    std::cout << n << " bytes" << std::endl;
+    std::cout << buf << std::endl;
 }
 
 
@@ -42,13 +48,20 @@ int main() {
     sleep(1000);
      */
 
-    //NetModule test
+    /*
+    //Acceptor test
     std::shared_ptr<ep::EventManager> eventManager(new EventManager);
     std::weak_ptr<EventManager> testptr = eventManager;
     NetModule::Acceptor mAcceptor(testptr, 9981);
     mAcceptor.setListonCallback(callback);
     mAcceptor.listen();
     eventManager.get()->loop();
+     */
+
+    //TCPserver test
+    NetModule::TCPServer tcpServer(9981);
+    tcpServer.setMessageCallback(messagecallback);
+    tcpServer.start();
 
     return 0;
 

@@ -84,7 +84,8 @@ Channel::Channel(EventManager* eventManager, int fd):
         mRevent(EpollNoneEvent),
         mStatus(ChannelStatusNew)
 {
-
+    mEvent |= EpollCloseEvent;
+    update();
 }
 
 Channel::~Channel() {
@@ -93,6 +94,11 @@ Channel::~Channel() {
 
 void Channel::setEvent(int event) {
     mEvent = event;
+    update();
+}
+
+void Channel::disableAll() {
+    mEvent = EpollNoneEvent;
     update();
 }
 

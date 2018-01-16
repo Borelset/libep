@@ -34,10 +34,12 @@ namespace ep{
         int getFd();
         bool isNoneEvent();
         int getEvent();
+        void disableAll();
     private:
         EventCallback mReadCallback;
         EventCallback mWriteCallback;
         EventCallback mErrorCallback;
+        EventCallback mCloseCallback;
 
         int mEventFd;
         int mEvent;
