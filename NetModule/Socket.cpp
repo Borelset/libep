@@ -17,15 +17,17 @@ NetModule::Socket::Socket(int domain, int type, int protocol):
     if(mSocketFd.getFd() < 0){
         std::cout << "NetModule::Socket::Socket==>"
                   << "bad socket fd" << std::endl;
+        exit(0);
     }
     bzero(&mAddr, sizeof mAddr);
 }
 
-void NetModule::Socket::bindAddr(char* ip, int port) {
+void NetModule::Socket::bindAddr(const char* ip, int port) {
     mAddr.setAddr(ip, port);
     if(bind(mSocketFd.getFd(), (sockaddr*)&mAddr.getAddr(), sizeof mAddr.getAddr()) < 0){
         std::cout << "NetModule::Socket::bind==>"
                   << "fail in bind" << std::endl;
+        exit(0);
     }
 }
 
@@ -51,7 +53,8 @@ int NetModule::Socket::accept(struct sockaddr_in * saddr) {
 }
 
 NetModule::Socket::~Socket() {
-
+    std::cout << "NetModule::Socket::~Socket"
+              << "Socket " << mSocketFd.getFd() << " with addr " << inet_ntoa(mAddr.getAddr().sin_addr) << "releasing.." << std::endl;
 }
 
 

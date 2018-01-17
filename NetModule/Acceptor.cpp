@@ -14,9 +14,13 @@ NetModule::Acceptor::Acceptor(ep::EventManager* eventManager, int port):
 {
     mSocket.bindAddr("127.0.0.1", port);
     mListenChannel.setReadCallback(std::bind(&Acceptor::handleAccept, this));
+    std::cout << "NetModule::Acceptor::Acceptor=>>"
+              << "Construction" << std::endl;
 }
 
 void NetModule::Acceptor::listen() {
+    std::cout << "NetModule::Acceptor::listen=>>"
+              << "Start to listen" << std::endl;
     mListening = true;
     mSocket.listen();
     mListenChannel.enableRead();
@@ -48,4 +52,8 @@ bool NetModule::Acceptor::isListening() const {
 
 struct sockaddr_in NetModule::Acceptor::getLocalAddr() {
     return NetModule::getLocalAddr(mSocket.getSocket());
+}
+
+NetModule::Acceptor::~Acceptor() {
+
 }

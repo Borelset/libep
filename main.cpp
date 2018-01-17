@@ -7,6 +7,8 @@
 #include "NetModule/SockAddr.h"
 #include "NetModule/Acceptor.h"
 #include "NetModule/TCPServer.h"
+#include "ep/EventManagerThread.h"
+#include "Utils/CurrentThread.h"
 
 int fd;
 
@@ -24,20 +26,15 @@ void callback(int fd, NetModule::SockAddr addr){
     char buffer[] = "hello!";
 }
 
-void messagecallback(std::weak_ptr<NetModule::TCPConnection> tcpc, char* buf, int n){
-    std::cout << n << " bytes" << std::endl;
-    std::cout << buf << std::endl;
+void messagecallback(std::weak_ptr<NetModule::TCPConnection> tcpc, Utils::Buffer* readBuffer, time_t time){
+    std::cout << "Connection " << tcpc.lock()->getName() << " from " << tcpc.lock()->getIp() << ":" << tcpc.lock()->getPort()
+              << " Receive " << readBuffer->getReadble() << " bytes at " << time << std::endl;
+    std::cout << "Message:" << readBuffer->getContent() << std::endl;
 }
 
-
-int main() {
-    std::cout << getpid() << std::endl;
-
-    /*
-    //ep test
-    EventManagerThread eventManagerThread;
+void epTest(){
+    ep::EventManagerThread eventManagerThread;
     eventManagerThread.start();
-    pthread_t pthread;
     std::cout << "main:" << Utils::CurrentThread::gettid() << std::endl;
     std::function<void()> testcallback =
             std::bind(&EventManager::runAfter,
@@ -46,22 +43,25 @@ int main() {
     Utils::Thread testThread(testcallback);
     testThread.run();
     sleep(1000);
-     */
+}
 
-    /*
-    //Acceptor test
-    std::shared_ptr<ep::EventManager> eventManager(new EventManager);
-    std::weak_ptr<EventManager> testptr = eventManager;
-    NetModule::Acceptor mAcceptor(testptr, 9981);
+void acceptorTest(){
+    EventManager* eventManager = new EventManager;
+    NetModule::Acceptor mAcceptor(eventManager, 9981);
     mAcceptor.setListonCallback(callback);
     mAcceptor.listen();
-    eventManager.get()->loop();
-     */
+    eventManager->loop();
+}
 
-    //TCPserver test
+void tcpserverTest(){
     NetModule::TCPServer tcpServer(9981);
     tcpServer.setMessageCallback(messagecallback);
     tcpServer.start();
+}
+
+
+int main() {
+    tcpserverTest();
 
     return 0;
 

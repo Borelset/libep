@@ -14,7 +14,7 @@ namespace Utils{
     class Thread : Utils::noncopyable{
     public:
         typedef std::function<void()> Callback;
-        Thread(const Callback& callback);
+        explicit Thread(const Callback& callback);
         ~Thread();
         void run();
         int join();

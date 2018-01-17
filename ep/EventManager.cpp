@@ -133,3 +133,9 @@ void EventManager::eventfdCallbackProcess() {
     }
     mEventfdCallbackProcessing = false;
 }
+
+void EventManager::removeChannel(Channel * channel) {
+    std::cout << "ep::EventManager::removeChannel==>"
+              << "Channel " << channel->getFd() << " removed" << std::endl;
+    mEpollHandlerPtr->removeChannel(channel);
+}

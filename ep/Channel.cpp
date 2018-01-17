@@ -89,7 +89,8 @@ Channel::Channel(EventManager* eventManager, int fd):
 }
 
 Channel::~Channel() {
-
+    std::cout << "ep::Channel::~Channel==>"
+              << "Channel " << mEventFd << " releasing.." << std::endl;
 }
 
 void Channel::setEvent(int event) {
@@ -100,5 +101,9 @@ void Channel::setEvent(int event) {
 void Channel::disableAll() {
     mEvent = EpollNoneEvent;
     update();
+}
+
+bool Channel::isWriting() {
+    return static_cast<bool>(mEvent & EpollWriteEvent);
 }
 

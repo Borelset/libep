@@ -35,7 +35,7 @@ namespace Utils{
     private:
         MutexLock& mMutexLock;
     public:
-        MutexLockGuard(MutexLock& mutex);
+        explicit MutexLockGuard(MutexLock& mutex);
         ~MutexLockGuard();
     };
 
@@ -44,7 +44,7 @@ namespace Utils{
         MutexLock& mMutexLock;
         pthread_cond_t mCond;
     public:
-        Condition(MutexLock& mutex);
+        explicit Condition(MutexLock& mutex);
         ~Condition();
         void wait();
         void notify();

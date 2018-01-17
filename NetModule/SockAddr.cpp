@@ -13,7 +13,7 @@ SockAddr::SockAddr(struct sockaddr_in raddr):
 
 }
 
-SockAddr::SockAddr(char *ip, int port) {
+SockAddr::SockAddr(const char *ip, int port) {
     mRawSockAddr.sin_port = htons(port);
     mRawSockAddr.sin_addr.s_addr = inet_addr(ip);
     mRawSockAddr.sin_family = AF_INET;
@@ -23,7 +23,7 @@ struct sockaddr_in &SockAddr::getAddr() {
     return mRawSockAddr;
 }
 
-void SockAddr::setAddr(char *ip, int port) {
+void SockAddr::setAddr(const char* ip, int port) {
     mRawSockAddr.sin_port = htons(port);
     mRawSockAddr.sin_addr.s_addr = inet_addr(ip);
     mRawSockAddr.sin_family = AF_INET;

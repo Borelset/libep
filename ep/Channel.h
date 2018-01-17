@@ -35,6 +35,7 @@ namespace ep{
         bool isNoneEvent();
         int getEvent();
         void disableAll();
+        bool isWriting();
     private:
         EventCallback mReadCallback;
         EventCallback mWriteCallback;

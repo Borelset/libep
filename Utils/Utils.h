@@ -8,6 +8,7 @@
 #include <ctime>
 
 namespace Utils{
+
     static time_t getTime(){
         time_t time_;
         time(&time_);

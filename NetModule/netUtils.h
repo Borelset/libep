@@ -8,10 +8,8 @@
 #include <netinet/in.h>
 #include <zconf.h>
 #include <netdb.h>
-#include <bits/shared_ptr.h>
 #include <arpa/inet.h>
 #include <string.h>
-#include "TCPConnection.h"
 
 namespace NetModule{
 

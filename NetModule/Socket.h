@@ -15,11 +15,11 @@ namespace NetModule{
 
     class Socket : Utils::noncopyable{
     public:
-        Socket(int domain = AF_INET,
+        explicit Socket(int domain = AF_INET,
                int type = SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC,
                int protocol = IPPROTO_TCP);
         ~Socket();
-        void bindAddr(char* ip, int port);
+        void bindAddr(const char* ip, int port);
         void listen();
         int accept(struct sockaddr_in*);
         int getSocket();

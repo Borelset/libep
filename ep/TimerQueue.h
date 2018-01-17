@@ -18,7 +18,7 @@ namespace ep{
         typedef std::function<void()> TimerCallback;
         typedef std::pair<time_t, Timer*> Entry;
         typedef std::set<Entry> TimerList;
-        TimerQueue(EventManager* eventManager);
+        explicit TimerQueue(EventManager* eventManager);
         ~TimerQueue();
         std::vector<Entry> getExpired(time_t now);
         void handleRead();

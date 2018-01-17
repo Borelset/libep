@@ -6,35 +6,45 @@
 #define LIBEP_TCPCONNECTION_H
 
 #include "Socket.h"
+#include "../Utils/Buffer.h"
 
 namespace NetModule{
     class TCPConnection : Utils::noncopyable,
                           public std::enable_shared_from_this<TCPConnection>
     {
     public:
-        typedef std::function<void(TCPConnection&)> ConnectionCallback;
-        typedef std::function<void(std::weak_ptr<TCPConnection>, char*, int)> MessageCallback;
+        typedef std::function<void(std::weak_ptr<TCPConnection>)> ConnectionCallback;
+        typedef std::function<void(std::weak_ptr<TCPConnection>, Utils::Buffer*, ::time_t)> MessageCallback;
         typedef std::function<void(std::shared_ptr<TCPConnection>)> CloseCallback;
         TCPConnection(std::string name,
                       int fd,
                       SockAddr& localAddr,
                       SockAddr& peerAddr,
                       ep::EventManager* eventmanager);
+        ~TCPConnection();
         void setMessageCallback(const MessageCallback& messageCallback);
         void setConnectionCallback(const ConnectionCallback& connectionCallback);
         void setCloseCallback(const CloseCallback& callback);
+        void send(const std::string& message);
+        void shutDown();
         std::string getName();
+        std::string getIp();
+        int getPort();
         void connectionDestroy();
     private:
         enum TCPConnectionState{
             TCSConnecting,
             TCSConnected,
+            TCSDisconnecting,
             TCSDisconnected
         };
         void setState(TCPConnectionState state);
         void readHandle();
+        void writeHandle();
         void closeHandle();
         void errorHanle();
+        void sendInLoop(const std::string& message);
+        void shutDownInLoop();
 
         ep::EventManager* mEventManagerPtr;
         std::string mName;
@@ -46,6 +56,8 @@ namespace NetModule{
         ConnectionCallback mConnectionCallback;
         MessageCallback mMessageCallback;
         CloseCallback mCloseCallback;
+        Utils::Buffer mReadBuffer;
+        Utils::Buffer mWriteBuffer;
     };
 }
 

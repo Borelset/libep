@@ -14,10 +14,10 @@ namespace NetModule{
     class TCPServer : Utils::noncopyable{
     public:
         typedef std::map<std::string, std::shared_ptr<TCPConnection>> ConnectionMap;
-        typedef std::function<void(TCPConnection&)> ConnectionCallback;
-        typedef std::function<void(std::weak_ptr<TCPConnection>, char*, int)> MessageCallback;
+        typedef std::function<void(std::weak_ptr<TCPConnection>)> ConnectionCallback;
+        typedef std::function<void(std::weak_ptr<TCPConnection>, Utils::Buffer*, ::time_t)> MessageCallback;
 
-        TCPServer(int port);
+        explicit TCPServer(int port);
         ~TCPServer();
         void start();
         void setConnectionCallback(const ConnectionCallback&);

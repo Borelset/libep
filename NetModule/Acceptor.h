@@ -14,6 +14,7 @@ namespace NetModule{
     public:
         typedef std::function<void(int, SockAddr&)> ConnectionCallback;
         Acceptor(ep::EventManager* eventManager, int port);
+        ~Acceptor();
         void setListonCallback(const ConnectionCallback& connectionCallback);
         bool isListening() const;
         void listen();

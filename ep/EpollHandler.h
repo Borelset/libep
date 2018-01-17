@@ -21,6 +21,7 @@ namespace ep{
         ~EpollHandler();
         time_t epoll(int, ChannelList*);
         void updateChannel(Channel *);
+        void removeChannel(Channel *);
     private:
         Utils::FD mEpollFd;
         ChannelMap mChannelMap;

@@ -25,6 +25,7 @@ namespace ep{
         ~EventManager();
         void loop();
         void updateChannel(Channel*);
+        void removeChannel(Channel*);
         void setQuit();
         void runAt(std::function<void()> Callback, time_t when, int interval);
         void runAfter(std::function<void()> Callback, time_t when, int interval);

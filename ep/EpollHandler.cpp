@@ -68,3 +68,7 @@ void EpollHandler::epollCtlManager(int operate, Channel * channel) {
     event.data.ptr = channel;
     epoll_ctl(mEpollFd.getFd(), operate, channel->getFd(), &event);
 }
+
+void EpollHandler::removeChannel(Channel * channel) {
+    mChannelMap[channel->getFd()] = nullptr;
+}
