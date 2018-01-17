@@ -6,7 +6,7 @@
 #define LIBEP_NETUTILS_H
 
 #include <netinet/in.h>
-#include <zconf.h>
+#include <unistd.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <string.h>

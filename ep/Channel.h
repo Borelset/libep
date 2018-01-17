@@ -20,7 +20,7 @@ namespace ep{
         void process();
 
         void setReadCallback(const EventCallback&);
-        void setWritrCallback(const EventCallback&);
+        void setWriteCallback(const EventCallback &);
         void setErrorCallback(const EventCallback&);
 
         void enableRead();

@@ -78,8 +78,8 @@ void EventManager::runAfter(std::function<void()> Callback,
 bool EventManager::isLocalThread() {
     bool result = mThreadId == Utils::CurrentThread::gettid();
     if(!result){
-        std::cout << "EventManager::runInLoop==>"
-                  << "EventManager created in:" << mThreadId << "isLocalThread called in:" << Utils::CurrentThread::gettid() << std::endl;
+        std::cout << "EventManager::isLocalThread==>"
+                  << "EventManager created in:" << mThreadId << " isLocalThread called in:" << Utils::CurrentThread::gettid() << std::endl;
     }
     return result;
 }
@@ -89,17 +89,21 @@ void EventManager::runInLoop(const EventManager::Callback &callback) {
         callback();
     }else{
         std::cout << "EventManager::runInLoop==>"
-                  << "called by foreign thread:" << Utils::CurrentThread::gettid() << std::endl;
+                  << "called by foreign thread:" << Utils::CurrentThread::gettid() << " and turn to queueInLoop" << std::endl;
         queueInLoop(callback);
     }
 }
 
 void EventManager::queueInLoop(const EventManager::Callback &callback) {
+    std::cout << "ep::EventManager::queueInLoop==>"
+              << "mutex" << std::endl;
     {
         Utils::MutexLockGuard localGuard(mMutexLock);
         mCallbackQueue.push_back(callback);
     }
 
+    std::cout << "ep::EventManager::queueInLoop==>"
+              << "judging wakeup" << std::endl;
     if(mEventfdCallbackProcessing || !isLocalThread())
         wakeup();
 }

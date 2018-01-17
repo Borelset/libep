@@ -1,5 +1,5 @@
 #include <iostream>
-#include <zconf.h>
+#include <unistd.h>
 #include "ep/Channel.h"
 #include "ep/EpollHandler.h"
 #include "ep/EventManager.h"
@@ -13,6 +13,9 @@
 int fd;
 
 using namespace ep;
+
+std::string message1 = "hello everyone";
+std::string message2 = "bye!";
 
 void testRead(){
     std::cout << "hello read! " << std::endl;
@@ -28,8 +31,21 @@ void callback(int fd, NetModule::SockAddr addr){
 
 void messagecallback(std::weak_ptr<NetModule::TCPConnection> tcpc, Utils::Buffer* readBuffer, time_t time){
     std::cout << "Connection " << tcpc.lock()->getName() << " from " << tcpc.lock()->getIp() << ":" << tcpc.lock()->getPort()
-              << " Receive " << readBuffer->getReadble() << " bytes at " << time << std::endl;
+              << " Receive " << readBuffer->getReadble() << " character(s) at " << time << std::endl;
     std::cout << "Message:" << readBuffer->getContent() << std::endl;
+    tcpc.lock()->send(message1);
+    tcpc.lock()->shutDown();
+}
+
+void connectioncallback(std::weak_ptr<NetModule::TCPConnection> tcpc){
+    if(tcpc.lock()->isConnected()){
+        std::cout << "Connection " << tcpc.lock()->getName() << " from " << tcpc.lock()->getIp() << ":" << tcpc.lock()->getPort() << std::endl;
+        tcpc.lock()->send(message1);
+        tcpc.lock()->send(message2);
+        tcpc.lock()->shutDown();
+    }else{
+        std::cout << "Connection " << tcpc.lock()->getName() << " down"<< std::endl;
+    }
 }
 
 void epTest(){
@@ -61,6 +77,7 @@ void tcpserverTest(){
 
 
 int main() {
+    std::cout << Utils::CurrentThread::gettid() << std::endl;
     tcpserverTest();
 
     return 0;

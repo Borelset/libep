@@ -12,7 +12,7 @@ void MutexLock::lock(){
 }
 
 void MutexLock::unlock() {
-    mHolder = 0;
+    mHolder = -1;
     pthread_mutex_unlock(&mMutex);
 }
 
@@ -20,9 +20,10 @@ pthread_mutex_t *MutexLock::getPthreadMutex() {
     return &mMutex;
 }
 
-MutexLock::MutexLock():mHolder(0){
+MutexLock::MutexLock():mHolder(-1){
     pthread_mutexattr_settype(&mMutexType, PTHREAD_MUTEX_NORMAL);
     pthread_mutex_init(&mMutex, &mMutexType);
+    unlock();
 }
 
 MutexLock::~MutexLock(){
@@ -33,6 +34,10 @@ MutexLock::~MutexLock(){
 
 bool MutexLock::isLockByThisThread() {
     return mHolder == CurrentThread::gettid();
+}
+
+int MutexLock::getHolder() {
+    return mHolder;
 }
 
 MutexLockGuard::MutexLockGuard(MutexLock &mutex):mMutexLock(mutex){

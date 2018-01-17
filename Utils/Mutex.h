@@ -29,6 +29,7 @@ namespace Utils{
         MutexLock();
         ~MutexLock();
         bool isLockByThisThread();
+        int getHolder();
     };
 
     class MutexLockGuard : noncopyable{

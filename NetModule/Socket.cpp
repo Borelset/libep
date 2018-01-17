@@ -54,7 +54,22 @@ int NetModule::Socket::accept(struct sockaddr_in * saddr) {
 
 NetModule::Socket::~Socket() {
     std::cout << "NetModule::Socket::~Socket"
-              << "Socket " << mSocketFd.getFd() << " with addr " << inet_ntoa(mAddr.getAddr().sin_addr) << "releasing.." << std::endl;
+              << "Socket with fd:" << mSocketFd.getFd() << " with addr " << inet_ntoa(mAddr.getAddr().sin_addr) << " releasing.." << std::endl;
+}
+
+NetModule::Socket::Socket(Utils::FD& fd):
+        mSocketFd(fd.getFd())
+{
+
+}
+
+void NetModule::Socket::shutDown() {
+    shutdown(mSocketFd.getFd(), SHUT_WR);
+}
+
+void NetModule::Socket::setKeepAlive(bool opt) {
+    int option = opt? 1 : 0;
+    setsockopt(mSocketFd.getFd(), SOL_SOCKET, SO_KEEPALIVE, &option, sizeof option);
 }
 
 

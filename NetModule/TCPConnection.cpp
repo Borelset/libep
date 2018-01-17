@@ -17,6 +17,7 @@ NetModule::TCPConnection::TCPConnection(std::string name, int fd,
                             mName(name),
                             mChannel(new ep::Channel(eventmanager, fd)),
                             mFd(fd),
+                            mSocket(new Socket(mFd)),
                             mLocalSockAddr(localAddr),
                             mPeerSockAddr(peerAddr),
                             mState(TCSConnecting)
@@ -24,9 +25,9 @@ NetModule::TCPConnection::TCPConnection(std::string name, int fd,
     std::cout << "NetModule::TCPConnection::TCPConnection==>"
               << "Construction" << std::endl;
     mChannel->setReadCallback(std::bind(&TCPConnection::readHandle, this));
-    mChannel->setWritrCallback(std::bind(&TCPConnection::writeHandle, this));
-    mChannel->enableRead();
-    if(mConnectionCallback) mConnectionCallback(shared_from_this());
+    mChannel->setWriteCallback(std::bind(&TCPConnection::writeHandle, this));
+    mChannel->setErrorCallback(std::bind(&TCPConnection::errorHandle, this));
+    mSocket->setKeepAlive(true);
 }
 
 void NetModule::TCPConnection::setState(NetModule::TCPConnection::TCPConnectionState state) {
@@ -38,7 +39,7 @@ void NetModule::TCPConnection::setState(NetModule::TCPConnection::TCPConnectionS
 void NetModule::TCPConnection::readHandle() {
     int n = mReadBuffer.readFromFd(mFd.getFd());
     std::cout << "NetModule::TCPConnection::readHandle==>"
-              << "read " << n << " bytes" << std::endl;
+              << "read " << n << " character(s)" << std::endl;
     if(n > 0){
         if(mMessageCallback) mMessageCallback(shared_from_this(), &mReadBuffer, Utils::getTime());
     }else if(n == 0){
@@ -46,7 +47,7 @@ void NetModule::TCPConnection::readHandle() {
                   << "Ready to close" << std::endl;
         closeHandle();
     }else{
-        errorHanle();
+        errorHandle();
     }
 
 }
@@ -76,7 +77,7 @@ void NetModule::TCPConnection::closeHandle() {
     mCloseCallback(shared_from_this());
 }
 
-void NetModule::TCPConnection::errorHanle() {
+void NetModule::TCPConnection::errorHandle() {
     std::cout << "NetModule::TCPConnection::errorHandle==>"
               << "error" << std::endl;
 }
@@ -135,18 +136,18 @@ void NetModule::TCPConnection::shutDown() {
 }
 
 void NetModule::TCPConnection::sendInLoop(const std::string& message) {
-    ssize_t writeBytes = 0;
+    ssize_t writeChars = 0;
     if(!mChannel->isWriting() && mWriteBuffer.getReadble() == 0){
-        writeBytes = ::write(mFd.getFd(), message.c_str(), message.size());
-        if(writeBytes < 0){
+        writeChars = ::write(mFd.getFd(), message.c_str(), message.size());
+        if(writeChars < 0){
             std::cout << "NetModule::TCPConnection::sendInLoop==>"
                       << "Error in write" << std::endl;
-            writeBytes = 0;
+            writeChars = 0;
         }
     }
-    if(writeBytes < message.size()){
+    if(writeChars < message.size()){
         mWriteBuffer.writeBuffer(
-                (char*)message.data() + writeBytes, message.size()-writeBytes);
+                (char*)message.data() + writeChars, message.size()-writeChars);
         if(!mChannel->isWriting()){
             mChannel->enableWrite();
         }
@@ -154,17 +155,17 @@ void NetModule::TCPConnection::sendInLoop(const std::string& message) {
 }
 
 void NetModule::TCPConnection::shutDownInLoop() {
-    if(mEventManagerPtr->isLocalThread()){
-        std::cout << "NetModule::TCPConnection::sendInLoop==>"
+    if(!mEventManagerPtr->isLocalThread()){
+        std::cout << "NetModule::TCPConnection::shutDownInLoop==>"
                   << "not in local thread" << std::endl;
     }
     if(!mChannel->isWriting()){
-        shutdown(mFd.getFd(), SHUT_WR);
+        mSocket->shutDown();
     }
 }
 
 void NetModule::TCPConnection::writeHandle() {
-    if(mEventManagerPtr->isLocalThread()) {
+    if(!mEventManagerPtr->isLocalThread()) {
         std::cout << "NetModule::TCPConnection::writeHandle==>"
                   << "not in local thread" << std::endl;
     }
@@ -190,4 +191,17 @@ void NetModule::TCPConnection::writeHandle() {
     }
 }
 
+void NetModule::TCPConnection::connectionEstablish() {
+    mChannel->enableRead();
+    mState = TCSConnected;
+    if(mConnectionCallback) mConnectionCallback(shared_from_this());
+}
+
+bool NetModule::TCPConnection::isConnected() {
+    return mState == TCSConnected;
+}
+
+ep::EventManager* NetModule::TCPConnection::getManager() {
+    return mEventManagerPtr;
+}
 

@@ -9,6 +9,7 @@
 #include "../ep/EventManager.h"
 #include "Acceptor.h"
 #include "TCPConnection.h"
+#include "../ep/EventManagerThreadPool.h"
 
 namespace NetModule{
     class TCPServer : Utils::noncopyable{
@@ -23,8 +24,10 @@ namespace NetModule{
         void setConnectionCallback(const ConnectionCallback&);
         void setMessageCallback(const MessageCallback&);
         void removeConnection(std::shared_ptr<TCPConnection>);
+        void removeConnectionInOwnerManager(std::shared_ptr<TCPConnection>);
     private:
         ep::EventManager mEventManager;
+        ep::EventManagerThreadPool mEventManagerThreadPool;
         Acceptor mAcceptor;
         ConnectionMap mConnectionMap;
         const std::string mConnName;

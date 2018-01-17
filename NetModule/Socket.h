@@ -18,11 +18,14 @@ namespace NetModule{
         explicit Socket(int domain = AF_INET,
                int type = SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC,
                int protocol = IPPROTO_TCP);
+        explicit Socket(Utils::FD& fd);
         ~Socket();
         void bindAddr(const char* ip, int port);
         void listen();
         int accept(struct sockaddr_in*);
         int getSocket();
+        void shutDown();
+        void setKeepAlive(bool opt);
     private:
         SockAddr mAddr;
         Utils::FD mSocketFd;

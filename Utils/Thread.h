@@ -5,7 +5,7 @@
 #ifndef LIBEP_UTILS_THREAD_H
 #define LIBEP_UTILS_THREAD_H
 
-#include <zconf.h>
+#include <unistd.h>
 #include <functional>
 #include "../ep/epollUtils.h"
 #include "noncopyable.h"

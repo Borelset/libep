@@ -69,7 +69,7 @@ int Utils::Buffer::readFromFd(int fd) {
 
     ssize_t n = ::readv(fd, receiver, 2);
     std::cout << "Utils::Buffer::readFromFd==>>"
-              << "read " << n << " byte(s) and writable=" << getWriteable() << std::endl;
+              << "read " << n << " character(s)" << std::endl;
     if(n<0){
         std::cout << "Utils::Buffer::readFromFd==>>"
                   << "readv error at fd: " << fd << std::endl;
@@ -84,6 +84,8 @@ int Utils::Buffer::readFromFd(int fd) {
 }
 
 std::string Utils::Buffer::getContent() {
+    std::cout << "Utils::Buffer::getContent==>>"
+              << "read " << getReadble() << " characters" << std::endl;
     std::string result(mMemory.data()+mReadIndex, getReadble());
     mReadIndex += getReadble();
     return result;

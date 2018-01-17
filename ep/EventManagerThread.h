@@ -11,7 +11,7 @@
 namespace ep{
     class EventManagerThread : Utils::noncopyable{
     public:
-        EventManagerThread();
+        explicit EventManagerThread();
         ~EventManagerThread();
         void start();
         EventManager* getEventManagerHandler();

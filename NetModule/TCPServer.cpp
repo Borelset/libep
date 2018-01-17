@@ -9,9 +9,11 @@ NetModule::TCPServer::TCPServer(int port):
         mAcceptor(&mEventManager, port),
         mConnName("Connection"),
         mNextConnId(0),
-        mLocalAddr(mAcceptor.getLocalAddr())
+        mLocalAddr(mAcceptor.getLocalAddr()),
+        mEventManagerThreadPool(&mEventManager)
 {
     mAcceptor.setListonCallback(std::bind(&TCPServer::newConnection, this, std::placeholders::_1, std::placeholders::_2));
+    mEventManagerThreadPool.setThreadNum(10);
     std::cout << "NetModule::TCPServer::TCPServer==>"
               << "Construction" << std::endl;
 }
@@ -24,6 +26,7 @@ NetModule::TCPServer::~TCPServer() {
 void NetModule::TCPServer::start() {
     std::cout << "NetModule::TCPServer::start==>"
               << "Start" << std::endl;
+    mEventManagerThreadPool.start();
     mAcceptor.listen();
     mEventManager.loop();
 }
@@ -42,12 +45,17 @@ void NetModule::TCPServer::newConnection(int fd, NetModule::SockAddr &addr) {
     std::cout << "NetModule::TCPServer::newConnection==>"
               << "\n\tnew connection "<< connName << std::endl
               << "\tfrom " << inet_ntoa(addr.getAddr().sin_addr) << ":" << addr.getAddr().sin_port << std::endl;
+    ep::EventManager* ioManager = mEventManagerThreadPool.getNextManager();
     std::shared_ptr<TCPConnection> connPtr(
-            new TCPConnection(connName, fd, mLocalAddr, addr, &mEventManager));
+            new TCPConnection(connName, fd, mLocalAddr, addr, ioManager));
     mConnectionMap[connName] = connPtr;
     connPtr->setMessageCallback(mMessageCallback);
     connPtr->setConnectionCallback(mConnectionCallback);
     connPtr->setCloseCallback(std::bind(&TCPServer::removeConnection, this, std::placeholders::_1));
+    ioManager->runInLoop(
+            std::bind(&TCPConnection::connectionEstablish, connPtr)
+    );
+    //connPtr->connectionEstablish();
 }
 
 void NetModule::TCPServer::setMessageCallback(const MessageCallback & callback) {
@@ -57,6 +65,12 @@ void NetModule::TCPServer::setMessageCallback(const MessageCallback & callback) 
 }
 
 void NetModule::TCPServer::removeConnection(std::shared_ptr<NetModule::TCPConnection> connPtr) {
+    mEventManager.runInLoop(
+            std::bind(&TCPServer::removeConnectionInOwnerManager, this, connPtr)
+    );
+}
+
+void NetModule::TCPServer::removeConnectionInOwnerManager(std::shared_ptr<NetModule::TCPConnection> connPtr) {
     size_t n = mConnectionMap.erase(connPtr->getName());
     std::cout << "NetModule::TCPServer::removeConnection==>"
               << "mConnectionMap earse " << n << " item(s)" << std::endl;
@@ -64,5 +78,8 @@ void NetModule::TCPServer::removeConnection(std::shared_ptr<NetModule::TCPConnec
         std::cout << "NetModule::TCPServer::removeConnection==>"
                   << "Wrong number things erased from ConnectionMap. They have same Connection Name but it should not." << std::endl;
     }
-    mEventManager.runInLoop(std::bind(&TCPConnection::connectionDestroy, connPtr));
+    ep::EventManager* ioManager = connPtr->getManager();
+    ioManager->runInLoop(
+            std::bind(&TCPConnection::connectionDestroy, connPtr)
+    );
 }

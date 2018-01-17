@@ -69,7 +69,7 @@ void Channel::setReadCallback(const Channel::EventCallback & eventCallback) {
     mReadCallback = eventCallback;
 }
 
-void Channel::setWritrCallback(const Channel::EventCallback & eventCallback) {
+void Channel::setWriteCallback(const EventCallback &eventCallback) {
     mWriteCallback = eventCallback;
 }
 
@@ -90,7 +90,7 @@ Channel::Channel(EventManager* eventManager, int fd):
 
 Channel::~Channel() {
     std::cout << "ep::Channel::~Channel==>"
-              << "Channel " << mEventFd << " releasing.." << std::endl;
+              << "Channel with fd:" << mEventFd << " releasing.." << std::endl;
 }
 
 void Channel::setEvent(int event) {

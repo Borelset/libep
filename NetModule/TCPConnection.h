@@ -30,7 +30,10 @@ namespace NetModule{
         std::string getName();
         std::string getIp();
         int getPort();
+        void connectionEstablish();
         void connectionDestroy();
+        bool isConnected();
+        ep::EventManager* getManager();
     private:
         enum TCPConnectionState{
             TCSConnecting,
@@ -42,7 +45,7 @@ namespace NetModule{
         void readHandle();
         void writeHandle();
         void closeHandle();
-        void errorHanle();
+        void errorHandle();
         void sendInLoop(const std::string& message);
         void shutDownInLoop();
 
@@ -51,6 +54,7 @@ namespace NetModule{
         TCPConnectionState mState;
         std::unique_ptr<ep::Channel> mChannel;
         Utils::FD mFd;
+        std::unique_ptr<Socket> mSocket;
         SockAddr mLocalSockAddr;
         SockAddr mPeerSockAddr;
         ConnectionCallback mConnectionCallback;
