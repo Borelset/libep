@@ -54,11 +54,12 @@ int NetModule::Socket::accept(struct sockaddr_in * saddr) {
 
 NetModule::Socket::~Socket() {
     std::cout << "NetModule::Socket::~Socket"
-              << "Socket with fd:" << mSocketFd.getFd() << " with addr " << inet_ntoa(mAddr.getAddr().sin_addr) << " releasing.." << std::endl;
+              << "Socket with fd:" << mSocketFd.getFd() << " from " << inet_ntoa(mAddr.getAddr().sin_addr) << " releasing.." << std::endl;
 }
 
-NetModule::Socket::Socket(Utils::FD& fd):
-        mSocketFd(fd.getFd())
+NetModule::Socket::Socket(Utils::FD& fd, SockAddr addr):
+        mSocketFd(fd.getFd()),
+        mAddr(addr)
 {
 
 }
@@ -72,4 +73,12 @@ void NetModule::Socket::setKeepAlive(bool opt) {
     setsockopt(mSocketFd.getFd(), SOL_SOCKET, SO_KEEPALIVE, &option, sizeof option);
 }
 
+bool NetModule::Socket::connect(NetModule::SockAddr addr) {
+    if(::connect(mSocketFd.getFd(), (sockaddr*)&addr.getAddr(), sizeof (struct sockaddr)) < 0){
+        std::cout << "NetModule::Socket::connect==>"
+                  << "Connect error" << std::endl;
+        return false;
+    }
+    return true;
+}
 

@@ -3,8 +3,10 @@
 //
 
 #include <sys/uio.h>
+#include <unistd.h>
 #include <iostream>
 #include "Buffer.h"
+#include "errno.h"
 
 Utils::Buffer::Buffer(unsigned long size):
         mMemory(size),
@@ -97,4 +99,18 @@ char *Utils::Buffer::readPoint() {
 
 void Utils::Buffer::setForward(unsigned long n) {
     mReadIndex += n;
+}
+
+void Utils::Buffer::swap(Utils::Buffer &buffer) {
+    mMemory.swap(buffer.mMemory);
+}
+
+int Utils::Buffer::writeToFD(int fd) {
+    ssize_t n = write(fd, mMemory.data() + mReadIndex, getReadble());
+    if(n == -1){
+        std::cout << "Utils::Buffer::writeToFD==>"
+                  << "errno:" << errno << std::endl;
+    }
+    mReadIndex += getReadble();
+    return n;
 }

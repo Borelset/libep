@@ -17,7 +17,7 @@ NetModule::TCPConnection::TCPConnection(std::string name, int fd,
                             mName(name),
                             mChannel(new ep::Channel(eventmanager, fd)),
                             mFd(fd),
-                            mSocket(new Socket(mFd)),
+                            mSocket(new Socket(mFd, peerAddr)),
                             mLocalSockAddr(localAddr),
                             mPeerSockAddr(peerAddr),
                             mState(TCSConnecting)

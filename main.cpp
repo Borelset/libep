@@ -9,6 +9,7 @@
 #include "NetModule/TCPServer.h"
 #include "ep/EventManagerThread.h"
 #include "Utils/CurrentThread.h"
+#include "Utils/LoggerManager.h"
 
 int fd;
 
@@ -77,6 +78,23 @@ void tcpserverTest(){
 
 
 int main() {
+    //Utils::SetLogLevel(Utils::Warning);
+    Utils::LoggerManager loggerManager;
+    sleep(1);
+    loggerManager.setLogLevel(Utils::Warning);
+    Utils::LoggerStream& logInfo = loggerManager.getStream(Utils::Info);
+    Utils::LoggerStream& logWarning = loggerManager.getStream(Utils::Warning);
+    Utils::LoggerEndl endl;
+
+    logInfo << "hello" << endl;
+    logWarning << "hello" << endl;
+    logInfo << "hello" << endl;
+    logWarning << "hello" << endl;
+    logInfo << "hello" << endl;
+    logWarning << "hello" << endl;
+    logInfo << "hello" << endl;
+    logWarning << "hello" << endl;
+
     std::cout << Utils::CurrentThread::gettid() << std::endl;
     tcpserverTest();
 
