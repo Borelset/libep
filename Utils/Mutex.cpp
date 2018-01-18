@@ -3,6 +3,7 @@
 //
 #include "Mutex.h"
 #include "CurrentThread.h"
+#include "Logger/LoggerManager.h"
 
 using namespace Utils;
 
@@ -28,7 +29,7 @@ MutexLock::MutexLock():mHolder(-1){
 
 MutexLock::~MutexLock(){
     if(mHolder!=0)
-        std::cout << "Mutex held" << std::endl;
+        Log::LogInfo << "Mutex held" << Log::endl;
     pthread_mutex_destroy(&mMutex);
 }
 

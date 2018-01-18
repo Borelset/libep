@@ -5,6 +5,7 @@
 #include <functional>
 #include "Thread.h"
 #include "CurrentThread.h"
+#include "Logger/LoggerManager.h"
 
 using namespace Utils;
 
@@ -20,8 +21,8 @@ Thread::~Thread() {
 }
 
 void Thread::run() {
-    std::cout << "Thread::run==>"
-              << "pthread_create" << std::endl;
+    //Log::LogInfo << "Thread::run==>"
+    //             << "pthread_create" << Log::endl;
     pthread_create(&mPid, nullptr, CurrentThread::callbackProxy, this);
 }
 

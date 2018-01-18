@@ -5,13 +5,14 @@
 #ifndef LIBEP_LOGGER_H
 #define LIBEP_LOGGER_H
 
-#include "noncopyable.h"
-#include "Thread.h"
-#include "Buffer.h"
-#include "Mutex.h"
-#include "FD.h"
+#include <bits/unique_ptr.h>
+#include "../noncopyable.h"
+#include "../Thread.h"
+#include "../Buffer.h"
+#include "../Mutex.h"
+#include "../FD.h"
 
-namespace Utils{
+namespace Log{
     static const int BUFFER_NUMS = 2;
     static const int BUFFER_FLASH_LIMIT = 2;
 
@@ -19,18 +20,19 @@ namespace Utils{
         Info,
         Debug,
         Warning,
-        Error
+        Error,
+        Nothing
     };
-    static std::vector<LogLevel> LogLevelCollection = {Info, Debug, Warning, Error};
 
     class Logger : Utils::noncopyable{
     public:
-        explicit Logger(LogLevel level, char* path);
+        explicit Logger(LogLevel level);
         ~Logger();
         LogLevel getLevel();
         void setLevel(LogLevel level);
         void append(char* log, int length);
         void flush();
+        void setLogPath(char* path);
     private:
 
         Utils::Thread mWriteThread;
@@ -41,7 +43,7 @@ namespace Utils{
         int mUsing;
         bool mQuit;
         LogLevel mLevel;
-        Utils::FD mLogFile;
+        std::unique_ptr<Utils::FD> mLogFilePtr;
 
         void bufferSwapCallback();
     };

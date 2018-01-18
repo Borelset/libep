@@ -4,6 +4,7 @@
 
 #include "../ep/EventManager.h"
 #include "Connector.h"
+#include "../Utils/Logger/LoggerManager.h"
 
 NetModule::Connector::Connector(ep::EventManager *eventmanager, SockAddr &addr):
         mEventManager(eventmanager),
@@ -48,8 +49,8 @@ void NetModule::Connector::writeHandle() {
     int opt = -1;
     socklen_t length = sizeof opt;
     if(getsockopt(mSocketPtr->getSocket(), SOL_SOCKET, SO_ERROR, &opt, &length) != 0){
-        std::cout << "NetModule::Connector::writeHandle==>"
-                  << "socket error" << std::endl;
+        Log::LogError << "NetModule::Connector::writeHandle==>"
+                      << "socket error" << Log::endl;
     }
     mConnectionCallback(mSocketPtr->getSocket());
 }

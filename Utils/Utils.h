@@ -6,8 +6,6 @@
 #define LIBEP_UTILS_UTILS_H
 
 #include <ctime>
-#include "Logger.h"
-#include "LoggerManager.h"
 
 namespace Utils{
 

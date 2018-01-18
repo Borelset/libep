@@ -20,3 +20,7 @@ FD::~FD() {
 int FD::getFd() {
     return mFd;
 }
+
+void FD::setFd(int fd) {
+    mFd = fd;
+}

@@ -5,6 +5,7 @@
 #include "Socket.h"
 #include "Acceptor.h"
 #include "netUtils.h"
+#include "../Utils/Logger/LoggerManager.h"
 
 NetModule::Acceptor::Acceptor(ep::EventManager* eventManager, int port):
         mEventManager(eventManager),
@@ -14,13 +15,13 @@ NetModule::Acceptor::Acceptor(ep::EventManager* eventManager, int port):
 {
     mSocket.bindAddr("127.0.0.1", port);
     mListenChannel.setReadCallback(std::bind(&Acceptor::handleAccept, this));
-    std::cout << "NetModule::Acceptor::Acceptor=>>"
-              << "Construction" << std::endl;
+    Log::LogInfo << "NetModule::Acceptor::Acceptor=>>"
+                 << "Construction" << Log::endl;
 }
 
 void NetModule::Acceptor::listen() {
-    std::cout << "NetModule::Acceptor::listen=>>"
-              << "Start to listen" << std::endl;
+    Log::LogInfo << "NetModule::Acceptor::listen=>>"
+                 << "Start to listen" << Log::endl;
     mListening = true;
     mSocket.listen();
     mListenChannel.enableRead();
@@ -28,8 +29,8 @@ void NetModule::Acceptor::listen() {
 
 void NetModule::Acceptor::handleAccept() {
     if(!mEventManager->isLocalThread()){
-        std::cout << "NetModule::Acceptor::handleAccept=>>"
-                  << "called out of local thread and force exit" << std::endl;
+        Log::LogError << "NetModule::Acceptor::handleAccept=>>"
+                      << "called out of local thread and force exit" << Log::endl;
         return;
     }
     SockAddr sockAddr;
@@ -37,8 +38,8 @@ void NetModule::Acceptor::handleAccept() {
     if(accfd > 0){
         mListenCallback(accfd, sockAddr);
     }else{
-        std::cout << "NetModule::Acceptor::handleAccept=>>"
-                  << "fail in accept connection" << std::endl;
+        Log::LogError << "NetModule::Acceptor::handleAccept=>>"
+                      << "fail in accept connection" << Log::endl;
     }
 }
 

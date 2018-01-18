@@ -6,6 +6,8 @@
 #include "EpollHandler.h"
 #include "TimerQueue.h"
 #include "../Utils/CurrentThread.h"
+#include "../Utils/Logger/Logger.h"
+#include "../Utils/Logger/LoggerManager.h"
 #include <sys/eventfd.h>
 
 using namespace ep;
@@ -59,18 +61,18 @@ void EventManager::runAt(std::function<void()> Callback,
     if(when - time_ > 0)
         mTimerQueue.addTimer(Callback, when-Utils::getTime(), interval);
     else
-        std::cout << "EventManger::runAt() invalid param"
-                  << std::endl
-                  << "when == " << when << " smaller than getTime() == " << time_ << std::endl;
+        Log::LogWarning << "EventManger::runAt() invalid param"
+                        << Log::endl
+                        << "when == " << when << " smaller than getTime() == " << time_ << Log::endl;
 }
 
 void EventManager::runAfter(std::function<void()> Callback,
                             time_t when,
                             int interval) {
     if(when <=0){
-        std::cout << "EventManger::runAfter() invalid param"
-                  << std::endl
-                  << "when == " << when << " smaller than 0" << std::endl;
+        Log::LogWarning << "EventManger::runAfter() invalid param"
+                        << Log::endl
+                        << "when == " << when << " smaller than 0" << Log::endl;
     }
     mTimerQueue.addTimer(Callback, when, interval);
 }
@@ -78,8 +80,8 @@ void EventManager::runAfter(std::function<void()> Callback,
 bool EventManager::isLocalThread() {
     bool result = mThreadId == Utils::CurrentThread::gettid();
     if(!result){
-        std::cout << "EventManager::isLocalThread==>"
-                  << "EventManager created in:" << mThreadId << " isLocalThread called in:" << Utils::CurrentThread::gettid() << std::endl;
+        Log::LogInfo << "EventManager::isLocalThread==>"
+                     << "EventManager created in:" << mThreadId << " isLocalThread called in:" << Utils::CurrentThread::gettid() << Log::endl;
     }
     return result;
 }
@@ -88,22 +90,22 @@ void EventManager::runInLoop(const EventManager::Callback &callback) {
     if(isLocalThread()){
         callback();
     }else{
-        std::cout << "EventManager::runInLoop==>"
-                  << "called by foreign thread:" << Utils::CurrentThread::gettid() << " and turn to queueInLoop" << std::endl;
+        Log::LogInfo << "EventManager::runInLoop==>"
+                     << "called by foreign thread:" << Utils::CurrentThread::gettid() << " and turn to queueInLoop" << Log::endl;
         queueInLoop(callback);
     }
 }
 
 void EventManager::queueInLoop(const EventManager::Callback &callback) {
-    std::cout << "ep::EventManager::queueInLoop==>"
-              << "mutex" << std::endl;
+    Log::LogInfo << "ep::EventManager::queueInLoop==>"
+                 << "mutex" << Log::endl;
     {
         Utils::MutexLockGuard localGuard(mMutexLock);
         mCallbackQueue.push_back(callback);
     }
 
-    std::cout << "ep::EventManager::queueInLoop==>"
-              << "judging wakeup" << std::endl;
+    Log::LogInfo << "ep::EventManager::queueInLoop==>"
+                 << "judging wakeup" << Log::endl;
     if(mEventfdCallbackProcessing || !isLocalThread())
         wakeup();
 }
@@ -111,20 +113,20 @@ void EventManager::queueInLoop(const EventManager::Callback &callback) {
 void EventManager::handleRead() {
     uint64_t many;
     read(mEventFd.getFd(), &many, sizeof many);
-    std::cout << "EventManager::handleRead==>"
-              << "Eventfd found " << many << " item(s)" << std::endl;
+    Log::LogInfo << "EventManager::handleRead==>"
+                 << "Eventfd found " << many << " item(s)" << Log::endl;
 }
 
 void EventManager::wakeup() {
     uint64_t one = 1;
     write(mEventFd.getFd(), &one, sizeof one);
-    std::cout << "EventManager::wakeup==>"
-              << "send a signal to wakeup" << std::endl;
+    Log::LogInfo << "EventManager::wakeup==>"
+                 << "send a signal to wakeup" << Log::endl;
 }
 
 void EventManager::eventfdCallbackProcess() {
-    std::cout << "EventManager::eventfdCallbackProcess==>"
-              << std::endl;
+    Log::LogInfo << "EventManager::eventfdCallbackProcess==>"
+                 << Log::endl;
     mEventfdCallbackProcessing = true;
     CallbackList callbackList;
     {
@@ -139,7 +141,7 @@ void EventManager::eventfdCallbackProcess() {
 }
 
 void EventManager::removeChannel(Channel * channel) {
-    std::cout << "ep::EventManager::removeChannel==>"
-              << "Channel " << channel->getFd() << " removed" << std::endl;
+    Log::LogInfo << "ep::EventManager::removeChannel==>"
+                 << "Channel " << channel->getFd() << " removed" << Log::endl;
     mEpollHandlerPtr->removeChannel(channel);
 }

@@ -6,17 +6,17 @@
 #include "LoggerManager.h"
 #include <algorithm>
 
-Utils::LoggerManager::LoggerManager(LogLevel level, char *path):
-        mLogger(new Logger(level, path))
+Log::LoggerManager::LoggerManager(LogLevel level):
+        mLogger(new Logger(level))
 {
 
 }
 
-Utils::LoggerManager::~LoggerManager() {
+Log::LoggerManager::~LoggerManager() {
 
 }
 
-Utils::LoggerStream& Utils::LoggerManager::getStream(Utils::LogLevel level) {
+Log::LoggerStream& Log::LoggerManager::getStream(Log::LogLevel level) {
     if(!mLoggerStreams[level]){
         std::shared_ptr<LoggerStream> ptr(new LoggerStream(mLogger, level));
         mLoggerStreams[level] = ptr;
@@ -24,9 +24,18 @@ Utils::LoggerStream& Utils::LoggerManager::getStream(Utils::LogLevel level) {
     return *mLoggerStreams[level];
 }
 
-void Utils::LoggerManager::setLogLevel(Utils::LogLevel level) {
+void Log::LoggerManager::setLogLevel(Log::LogLevel level) {
     mLogger->setLevel(level);
     for(auto i = mLoggerStreams.begin(); i!= mLoggerStreams.end(); i++){
         i->second->updateLevelTest();
     }
+}
+
+void Log::LoggerManager::setLogPath(char * path) {
+    mLogger->setLogPath(path);
+}
+
+Log::LoggerManager &Log::LoggerManager::getInstance() {
+    static LoggerManager instance;
+    return instance;
 }

@@ -8,6 +8,7 @@
 #include "../ep/EventManager.h"
 #include "TCPConnection.h"
 #include "../Utils/Utils.h"
+#include "../Utils/Logger/LoggerManager.h"
 
 NetModule::TCPConnection::TCPConnection(std::string name, int fd,
                                         NetModule::SockAddr &localAddr,
@@ -22,8 +23,8 @@ NetModule::TCPConnection::TCPConnection(std::string name, int fd,
                             mPeerSockAddr(peerAddr),
                             mState(TCSConnecting)
 {
-    std::cout << "NetModule::TCPConnection::TCPConnection==>"
-              << "Construction" << std::endl;
+    Log::LogInfo << "NetModule::TCPConnection::TCPConnection==>"
+                 << "Construction" << Log::endl;
     mChannel->setReadCallback(std::bind(&TCPConnection::readHandle, this));
     mChannel->setWriteCallback(std::bind(&TCPConnection::writeHandle, this));
     mChannel->setErrorCallback(std::bind(&TCPConnection::errorHandle, this));
@@ -31,20 +32,20 @@ NetModule::TCPConnection::TCPConnection(std::string name, int fd,
 }
 
 void NetModule::TCPConnection::setState(NetModule::TCPConnection::TCPConnectionState state) {
-    std::cout << "NetModule::TCPConnection::setState==>"
-              << "Set " << state << std::endl;
+    Log::LogInfo << "NetModule::TCPConnection::setState==>"
+                 << "Set " << state << Log::endl;
     mState = state;
 }
 
 void NetModule::TCPConnection::readHandle() {
     int n = mReadBuffer.readFromFd(mFd.getFd());
-    std::cout << "NetModule::TCPConnection::readHandle==>"
-              << "read " << n << " character(s)" << std::endl;
+    Log::LogInfo << "NetModule::TCPConnection::readHandle==>"
+                 << "read " << n << " character(s)" << Log::endl;
     if(n > 0){
         if(mMessageCallback) mMessageCallback(shared_from_this(), &mReadBuffer, Utils::getTime());
     }else if(n == 0){
-        std::cout << "NetModule::TCPConnection::readHandle==>"
-                  << "Ready to close" << std::endl;
+        Log::LogInfo << "NetModule::TCPConnection::readHandle==>"
+                     << "Ready to close" << Log::endl;
         closeHandle();
     }else{
         errorHandle();
@@ -53,24 +54,24 @@ void NetModule::TCPConnection::readHandle() {
 }
 
 void NetModule::TCPConnection::setMessageCallback(const NetModule::TCPConnection::MessageCallback &messageCallback) {
-    std::cout << "NetModule::TCPConnection::setMessageCallback==>"
-              << "set new MessageCallback" << std::endl;
+    Log::LogInfo << "NetModule::TCPConnection::setMessageCallback==>"
+                 << "set new MessageCallback" << Log::endl;
     mMessageCallback = messageCallback;
 }
 
 void NetModule::TCPConnection::setConnectionCallback(
         const NetModule::TCPConnection::ConnectionCallback &connectionCallback) {
-    std::cout << "NetModule::TCPConnection::setConnectionCallback==>"
-              << "set new ConnectionCallback" << std::endl;
+    Log::LogInfo << "NetModule::TCPConnection::setConnectionCallback==>"
+                 << "set new ConnectionCallback" << Log::endl;
     mConnectionCallback = connectionCallback;
 }
 
 void NetModule::TCPConnection::closeHandle() {
-    std::cout << "NetModule::TCPConnection::closeHandle==>"
-              << "close" << std::endl;
+    Log::LogInfo << "NetModule::TCPConnection::closeHandle==>"
+                 << "close" << Log::endl;
     if(!mEventManagerPtr->isLocalThread()){
-        std::cout << "NetModule::TCPConnection::closeHandle==>>"
-                  << "this should be called in local thread" << std::endl;
+        Log::LogError << "NetModule::TCPConnection::closeHandle==>>"
+                     << "this should be called in local thread" << Log::endl;
         return;
     }
     mChannel->disableAll();
@@ -78,13 +79,13 @@ void NetModule::TCPConnection::closeHandle() {
 }
 
 void NetModule::TCPConnection::errorHandle() {
-    std::cout << "NetModule::TCPConnection::errorHandle==>"
-              << "error" << std::endl;
+    Log::LogInfo << "NetModule::TCPConnection::errorHandle==>"
+                 << "error" << Log::endl;
 }
 
 void NetModule::TCPConnection::setCloseCallback(const CloseCallback & callback) {
-    std::cout << "NetModule::TCPConnection::setCloseCallback==>"
-              << "set new CloseCallback" << std::endl;
+    Log::LogInfo << "NetModule::TCPConnection::setCloseCallback==>"
+                 << "set new CloseCallback" << Log::endl;
     mCloseCallback = callback;
 }
 
@@ -93,8 +94,8 @@ std::string NetModule::TCPConnection::getName() {
 }
 
 void NetModule::TCPConnection::connectionDestroy() {
-    std::cout << "NetModule::TCPConnection::connectionDestroy==>"
-              << mName << " destroying.." << std::endl;
+    Log::LogInfo << "NetModule::TCPConnection::connectionDestroy==>"
+                 << mName << " destroying.." << Log::endl;
     setState(TCSDisconnected);
     mChannel->disableAll();
     if(mConnectionCallback) mConnectionCallback(shared_from_this());
@@ -102,8 +103,8 @@ void NetModule::TCPConnection::connectionDestroy() {
 }
 
 NetModule::TCPConnection::~TCPConnection() {
-    std::cout << "NetModule::TCPConnection::~TCPConnection==>"
-              << mName << " releasing.." << std::endl;
+    Log::LogInfo << "NetModule::TCPConnection::~TCPConnection==>"
+                 << mName << " releasing.." << Log::endl;
 }
 
 std::string NetModule::TCPConnection::getIp() {
@@ -140,8 +141,8 @@ void NetModule::TCPConnection::sendInLoop(const std::string& message) {
     if(!mChannel->isWriting() && mWriteBuffer.getReadble() == 0){
         writeChars = ::write(mFd.getFd(), message.c_str(), message.size());
         if(writeChars < 0){
-            std::cout << "NetModule::TCPConnection::sendInLoop==>"
-                      << "Error in write" << std::endl;
+            Log::LogError << "NetModule::TCPConnection::sendInLoop==>"
+                          << "Error in write" << Log::endl;
             writeChars = 0;
         }
     }
@@ -156,8 +157,8 @@ void NetModule::TCPConnection::sendInLoop(const std::string& message) {
 
 void NetModule::TCPConnection::shutDownInLoop() {
     if(!mEventManagerPtr->isLocalThread()){
-        std::cout << "NetModule::TCPConnection::shutDownInLoop==>"
-                  << "not in local thread" << std::endl;
+        Log::LogWarning << "NetModule::TCPConnection::shutDownInLoop==>"
+                        << "not in local thread" << Log::endl;
     }
     if(!mChannel->isWriting()){
         mSocket->shutDown();
@@ -166,8 +167,8 @@ void NetModule::TCPConnection::shutDownInLoop() {
 
 void NetModule::TCPConnection::writeHandle() {
     if(!mEventManagerPtr->isLocalThread()) {
-        std::cout << "NetModule::TCPConnection::writeHandle==>"
-                  << "not in local thread" << std::endl;
+        Log::LogWarning << "NetModule::TCPConnection::writeHandle==>"
+                        << "not in local thread" << Log::endl;
     }
     if(mChannel->isWriting()){
         ssize_t n = ::write(mFd.getFd(), mWriteBuffer.readPoint(), mWriteBuffer.getReadble());
@@ -178,16 +179,16 @@ void NetModule::TCPConnection::writeHandle() {
                 if(mState == TCSDisconnecting)
                     shutDown();
             }else{
-                std::cout << "NetModule::TCPConnection::writeHandle==>"
-                          << mName << ":more message need to write" << std::endl;
+                Log::LogInfo << "NetModule::TCPConnection::writeHandle==>"
+                             << mName << ":more message need to write" << Log::endl;
             }
         }else{
-            std::cout << "NetModule::TCPConnection::writeHandle==>"
-                      << mName << ": n=" << n << " Error in write" << std::endl;
+            Log::LogError << "NetModule::TCPConnection::writeHandle==>"
+                          << mName << ": n=" << n << " Error in write" << Log::endl;
         }
     }else{
-        std::cout << "NetModule::TCPConnection::writeHandle==>>"
-                  << mName << ":Not allow to write" << std::endl;
+        Log::LogError << "NetModule::TCPConnection::writeHandle==>>"
+                     << mName << ":Not allow to write" << Log::endl;
     }
 }
 

@@ -12,6 +12,7 @@ namespace Utils{
     public:
         FD(int fd);
         ~FD();
+        void setFd(int fd);
         int getFd();
     private:
         int mFd;

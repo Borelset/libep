@@ -7,6 +7,7 @@
 #include <iostream>
 #include "Buffer.h"
 #include "errno.h"
+#include "Logger/LoggerManager.h"
 
 Utils::Buffer::Buffer(unsigned long size):
         mMemory(size),
@@ -22,8 +23,8 @@ Utils::Buffer::~Buffer() {
 }
 
 void Utils::Buffer::writeBuffer(char *str, unsigned long length) {
-    std::cout << "Utils::Buffer::writeBuffer==>>"
-              << "write buffer" << std::endl;
+    //std::LogInfo << "Utils::Buffer::writeBuffer==>>"
+    //             << "write buffer" << std::endl;
     if(length > getWriteable()){
         ensureSpace(length);
     }
@@ -41,16 +42,16 @@ unsigned long Utils::Buffer::getWriteable() {
 
 void Utils::Buffer::ensureSpace(unsigned long length) {
     if(mCapacity > getWriteable() + length){
-        std::cout << "Utils::Buffer::ensureSpace==>>"
-                  << "Moving data" << std::endl;
+        //std::cout << "Utils::Buffer::ensureSpace==>>"
+        //             << "Moving data" << std::endl;
         std::copy(mMemory.begin()+mReadIndex,
                   mMemory.begin()+mWriteIndex,
                   mMemory.begin());
         mWriteIndex -= mReadIndex;
         mReadIndex = 0;
     }else{
-        std::cout << "Utils::Buffer::ensureSpace==>>"
-                  << "Larger capacity:" << mWriteIndex+length << std::endl;
+        //std::cout << "Utils::Buffer::ensureSpace==>>"
+        //             << "Larger capacity:" << mWriteIndex+length << std::endl;
         mMemory.resize(mWriteIndex + length);
         mCapacity = mWriteIndex + length;
     }
@@ -70,8 +71,8 @@ int Utils::Buffer::readFromFd(int fd) {
     receiver[1].iov_len = sizeof tempbuffer;
 
     ssize_t n = ::readv(fd, receiver, 2);
-    std::cout << "Utils::Buffer::readFromFd==>>"
-              << "read " << n << " character(s)" << std::endl;
+    //std::cout << "Utils::Buffer::readFromFd==>>"
+    //             << "read " << n << " character(s)" << std::endl;
     if(n<0){
         std::cout << "Utils::Buffer::readFromFd==>>"
                   << "readv error at fd: " << fd << std::endl;
@@ -86,8 +87,8 @@ int Utils::Buffer::readFromFd(int fd) {
 }
 
 std::string Utils::Buffer::getContent() {
-    std::cout << "Utils::Buffer::getContent==>>"
-              << "read " << getReadble() << " characters" << std::endl;
+    //std::cout << "Utils::Buffer::getContent==>>"
+    //             << "read " << getReadble() << " characters" << std::endl;
     std::string result(mMemory.data()+mReadIndex, getReadble());
     mReadIndex += getReadble();
     return result;
@@ -109,7 +110,7 @@ int Utils::Buffer::writeToFD(int fd) {
     ssize_t n = write(fd, mMemory.data() + mReadIndex, getReadble());
     if(n == -1){
         std::cout << "Utils::Buffer::writeToFD==>"
-                  << "errno:" << errno << std::endl;
+                     << "errno:" << errno << std::endl;
     }
     mReadIndex += getReadble();
     return n;

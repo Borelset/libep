@@ -6,7 +6,7 @@
 #include <cstring>
 #include "LoggerStream.h"
 
-Utils::LoggerStream::LoggerStream(std::weak_ptr <Logger> logger, LogLevel level):
+Log::LoggerStream::LoggerStream(std::weak_ptr <Logger> logger, LogLevel level):
         mLogger(logger),
         mLevel(level),
         mLineStart(true)
@@ -14,14 +14,16 @@ Utils::LoggerStream::LoggerStream(std::weak_ptr <Logger> logger, LogLevel level)
     mOutput = logger.lock()->getLevel() <= level ? 1 : 0;
 }
 
-Utils::LoggerStream &Utils::LoggerStream::operator<<(char * str) {
+Log::LoggerStream &Log::LoggerStream::operator<<(const char * str) {
+    std::cout << str;
     if(mOutput){
-        mLogger.lock()->append(str, strlen(str));
+        mLogger.lock()->append((char*)str, strlen(str));
     }
     return *this;
 }
 
-Utils::LoggerStream &Utils::LoggerStream::operator<<(int num) {
+Log::LoggerStream &Log::LoggerStream::operator<<(int num) {
+    std::cout << num;
     if(mOutput){
         char numbuffer[32];
         sprintf(numbuffer, "%d", num);
@@ -30,35 +32,29 @@ Utils::LoggerStream &Utils::LoggerStream::operator<<(int num) {
     return *this;
 }
 
-Utils::LoggerStream &Utils::LoggerStream::operator<<(Utils::LoggerStream&) {
+Log::LoggerStream &Log::LoggerStream::operator<<(Log::LoggerStream&) {
     if(mOutput){
         mLogger.lock()->flush();
     }
     return *this;
 }
 
-Utils::LoggerStream &Utils::LoggerStream::operator<<(Utils::LoggerEndl &) {
+Log::LoggerStream &Log::LoggerStream::operator<<(Log::LoggerEndl &) {
+    std::cout << std::endl;
     if(mOutput){
         mLogger.lock()->append("\n", 1);
     }
     return *this;
 }
 
-Utils::LoggerStream &Utils::LoggerStream::operator<<(std::string & str) {
+Log::LoggerStream &Log::LoggerStream::operator<<(std::string& str) {
+    std::cout << str;
     if(mOutput){
         mLogger.lock()->append((char*)str.c_str(), str.size());
     }
     return *this;
 }
 
-Utils::LoggerStream &Utils::LoggerStream::operator<<(std::string str) {
-    std::cout << mOutput << std::endl;
-    if(mOutput){
-        mLogger.lock()->append((char*)str.c_str(), str.size());
-    }
-    return *this;
-}
-
-void Utils::LoggerStream::updateLevelTest() {
+void Log::LoggerStream::updateLevelTest() {
     mOutput = mLogger.lock()->getLevel() <= mLevel ? 1 : 0;
 }

@@ -5,6 +5,7 @@
 #include "EventManager.h"
 #include "TimerQueue.h"
 #include "../Utils/Utils.h"
+#include "../Utils/Logger/LoggerManager.h"
 #include <sys/timerfd.h>
 #include <string.h>
 #include <unistd.h>
@@ -13,8 +14,8 @@ using namespace ep;
 
 int createTimerFd(){
     int timerFd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-    std::cout << "TimerQueue::createTimerFd==>"
-              << "created timerFd: " << timerFd << std::endl;
+    Log::LogInfo << "TimerQueue::createTimerFd==>"
+                 << "created timerFd: " << timerFd << Log::endl;
     return timerFd;
 }
 
@@ -33,8 +34,8 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(time_t now) {
     TimerList::iterator it = mTimerList.lower_bound(boundary);
     std::copy(mTimerList.begin(), it, std::back_inserter(result));
     mTimerList.erase(mTimerList.begin(), it);
-    std::cout << "TimerQueue::getExpired==>"
-              << "Found " << result.size() << " items, and left " << mTimerList.size() << std::endl;
+    Log::LogInfo << "TimerQueue::getExpired==>"
+                 << "Found " << result.size() << " items, and left " << mTimerList.size() << Log::endl;
     if(!mTimerList.empty())
         resetTimerFd(mTimerList.begin()->first - Utils::getTime());
     return result;
@@ -43,8 +44,8 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(time_t now) {
 void TimerQueue::handleRead() {
     uint64_t many;
     read(mTimerFd.getFd(), &many, sizeof many);
-    std::cout << "TimerQueue::handleRead==>"
-              << "There is " << many << " timer(s) time out" << std::endl;
+    Log::LogInfo << "TimerQueue::handleRead==>"
+                 << "There is " << many << " timer(s) time out" << Log::endl;
     std::vector<Entry> timeout = getExpired(Utils::getTime());
     for(auto it = timeout.begin(); it != timeout.end(); it++){
         it->second->run();
@@ -86,8 +87,8 @@ void TimerQueue::resetTimerFd(time_t time) {
     bzero(&now, sizeof(itimerspec));
     now.it_value.tv_sec = time;
     timerfd_settime(mTimerFd.getFd(), 0, &now, nullptr);
-    std::cout << "TimerQueue::resetTimerFd==>"
-              << "set alert after " << time << "second(s)" << std::endl;
+    Log::LogInfo << "TimerQueue::resetTimerFd==>"
+                 << "set alert after " << time << "second(s)" << Log::endl;
 }
 
 TimerQueue::~TimerQueue() {

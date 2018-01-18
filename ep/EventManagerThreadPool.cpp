@@ -4,6 +4,7 @@
 
 #include "EventManager.h"
 #include "EventManagerThreadPool.h"
+#include "../Utils/Logger/LoggerManager.h"
 
 ep::EventManagerThreadPool::EventManagerThreadPool(EventManager *eventManager) :
         mBaseEventManager(eventManager),
@@ -24,8 +25,8 @@ void ep::EventManagerThreadPool::setThreadNum(int num) {
         std::shared_ptr<EventManagerThread> newThread(new EventManagerThread());
         mThreads.push_back(newThread);
     }
-    std::cout << "ep::EventManagerThreadPool::setThreadNum==>"
-              << mThreadCount << " Threads established.." << std::endl;
+    Log::LogInfo << "ep::EventManagerThreadPool::setThreadNum==>"
+                 << mThreadCount << " Threads established.." << Log::endl;
 }
 
 void ep::EventManagerThreadPool::start() {
@@ -33,8 +34,8 @@ void ep::EventManagerThreadPool::start() {
         (*i)->start();
         mManagerHandles.push_back(((*i)->getEventManagerHandler()));
     }
-    std::cout << "ep::EventManagerThreadPool::start==>"
-              << mThreadCount << " Threads started.." << std::endl;
+    Log::LogInfo << "ep::EventManagerThreadPool::start==>"
+                 << mThreadCount << " Threads started.." << Log::endl;
 }
 
 ep::EventManager *ep::EventManagerThreadPool::getNextManager() {
@@ -42,8 +43,8 @@ ep::EventManager *ep::EventManagerThreadPool::getNextManager() {
         return mBaseEventManager;
     }else{
         mNextIndex = (mNextIndex+1) % mThreadCount;
-        std::cout << "ep::EventManagerThreadPool::getNextManager==>"
-                  << "Thread " << mNextIndex << " provided" << std::endl;
+        Log::LogInfo << "ep::EventManagerThreadPool::getNextManager==>"
+                     << "Thread " << mNextIndex << " provided" << Log::endl;
         return mManagerHandles[mNextIndex];
     }
 }

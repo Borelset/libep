@@ -4,6 +4,7 @@
 
 #include "Channel.h"
 #include "EventManager.h"
+#include "../Utils/Logger/LoggerManager.h"
 
 using namespace ep;
 
@@ -89,8 +90,8 @@ Channel::Channel(EventManager* eventManager, int fd):
 }
 
 Channel::~Channel() {
-    std::cout << "ep::Channel::~Channel==>"
-              << "Channel with fd:" << mEventFd << " releasing.." << std::endl;
+    Log::LogInfo << "ep::Channel::~Channel==>"
+              << "Channel with fd:" << mEventFd << " releasing.." << Log::endl;
 }
 
 void Channel::setEvent(int event) {

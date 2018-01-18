@@ -4,6 +4,7 @@
 
 #include <arpa/inet.h>
 #include "TCPServer.h"
+#include "../Utils/Logger/LoggerManager.h"
 
 NetModule::TCPServer::TCPServer(int port):
         mAcceptor(&mEventManager, port),
@@ -14,26 +15,27 @@ NetModule::TCPServer::TCPServer(int port):
 {
     mAcceptor.setListonCallback(std::bind(&TCPServer::newConnection, this, std::placeholders::_1, std::placeholders::_2));
     mEventManagerThreadPool.setThreadNum(10);
-    std::cout << "NetModule::TCPServer::TCPServer==>"
-              << "Construction" << std::endl;
+    Log::LogInfo << "NetModule::TCPServer::TCPServer==>"
+                 << "Construction" << Log::endl;
 }
 
 NetModule::TCPServer::~TCPServer() {
-    std::cout << "NetModule::TCPServer::~TCPServer==>"
-              << "Destruction" << std::endl;
+    Log::LogInfo << "NetModule::TCPServer::~TCPServer==>"
+                 << "Destruction" << Log::endl;
 }
 
 void NetModule::TCPServer::start() {
-    std::cout << "NetModule::TCPServer::start==>"
-              << "Start" << std::endl;
+    Log::LogInfo << "NetModule::TCPServer::start==>"
+                 << "Start" << Log::endl;
     mEventManagerThreadPool.start();
     mAcceptor.listen();
+    printf("Server Started Listening port:%d", mAcceptor.getLocalAddr().sin_port);
     mEventManager.loop();
 }
 
 void NetModule::TCPServer::setConnectionCallback(const ConnectionCallback& callback) {
-    std::cout << "NetModule::TCPServer::setConnectionCallback==>"
-              << "Set new connection callback" << std::endl;
+    Log::LogInfo << "NetModule::TCPServer::setConnectionCallback==>"
+                 << "Set new connection callback" << Log::endl;
     mConnectionCallback = callback;
 }
 
@@ -42,9 +44,9 @@ void NetModule::TCPServer::newConnection(int fd, NetModule::SockAddr &addr) {
     snprintf(buffer, sizeof buffer, "#%d", mNextConnId);
     mNextConnId++;
     std::string connName = mConnName + buffer;
-    std::cout << "NetModule::TCPServer::newConnection==>"
-              << "\n\tnew connection "<< connName << std::endl
-              << "\tfrom " << inet_ntoa(addr.getAddr().sin_addr) << ":" << addr.getAddr().sin_port << std::endl;
+    Log::LogInfo << "NetModule::TCPServer::newConnection==>"
+                 << "\n\tnew connection "<< connName << Log::endl
+                 << "\tfrom " << inet_ntoa(addr.getAddr().sin_addr) << ":" << addr.getAddr().sin_port << Log::endl;
     ep::EventManager* ioManager = mEventManagerThreadPool.getNextManager();
     std::shared_ptr<TCPConnection> connPtr(
             new TCPConnection(connName, fd, mLocalAddr, addr, ioManager));
@@ -59,8 +61,8 @@ void NetModule::TCPServer::newConnection(int fd, NetModule::SockAddr &addr) {
 }
 
 void NetModule::TCPServer::setMessageCallback(const MessageCallback & callback) {
-    std::cout << "NetModule::TCPServer::setMessageCallback==>"
-              << "Set new Message callback" << std::endl;
+    Log::LogInfo << "NetModule::TCPServer::setMessageCallback==>"
+                 << "Set new Message callback" << Log::endl;
     mMessageCallback = callback;
 }
 
@@ -72,11 +74,11 @@ void NetModule::TCPServer::removeConnection(std::shared_ptr<NetModule::TCPConnec
 
 void NetModule::TCPServer::removeConnectionInOwnerManager(std::shared_ptr<NetModule::TCPConnection> connPtr) {
     size_t n = mConnectionMap.erase(connPtr->getName());
-    std::cout << "NetModule::TCPServer::removeConnection==>"
-              << "mConnectionMap earse " << n << " item(s)" << std::endl;
+    Log::LogInfo << "NetModule::TCPServer::removeConnection==>"
+                 << "mConnectionMap earse " << n << " item(s)" << Log::endl;
     if(n != 1){
-        std::cout << "NetModule::TCPServer::removeConnection==>"
-                  << "Wrong number things erased from ConnectionMap. They have same Connection Name but it should not." << std::endl;
+        Log::LogInfo << "NetModule::TCPServer::removeConnection==>"
+                     << "Wrong number things erased from ConnectionMap. They have same Connection Name but it should not." << Log::endl;
     }
     ep::EventManager* ioManager = connPtr->getManager();
     ioManager->runInLoop(

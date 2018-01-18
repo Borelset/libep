@@ -6,19 +6,18 @@
 #define LIBEP_LOGGERSTREAM_H
 
 #include <memory>
-#include "noncopyable.h"
+#include "../noncopyable.h"
 #include "Logger.h"
 
-namespace Utils{
+namespace Log{
     class LoggerEndl{
     };
 
     class LoggerStream{
     public:
         LoggerStream(std::weak_ptr<Logger> logger, LogLevel);
-        LoggerStream&operator<<(char*);
+        LoggerStream&operator<<(const char*);
         LoggerStream&operator<<(std::string&);
-        LoggerStream&operator<<(std::string);
         LoggerStream&operator<<(int);
         LoggerStream&operator<<(LoggerStream&);
         LoggerStream&operator<<(LoggerEndl&);
