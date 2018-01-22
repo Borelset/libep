@@ -61,7 +61,7 @@ void EventManager::runAt(std::function<void()> Callback,
     if(when - time_ > 0)
         mTimerQueue.addTimer(Callback, when-Utils::getTime(), interval);
     else
-        Log::LogWarning << "EventManger::runAt() invalid param"
+        Log::LogWarning << "ep::EventManger::runAt() invalid param"
                         << Log::endl
                         << "when == " << when << " smaller than getTime() == " << time_ << Log::endl;
 }
@@ -70,7 +70,7 @@ void EventManager::runAfter(std::function<void()> Callback,
                             time_t when,
                             int interval) {
     if(when <=0){
-        Log::LogWarning << "EventManger::runAfter() invalid param"
+        Log::LogWarning << "ep::EventManger::runAfter() invalid param"
                         << Log::endl
                         << "when == " << when << " smaller than 0" << Log::endl;
     }
@@ -80,7 +80,7 @@ void EventManager::runAfter(std::function<void()> Callback,
 bool EventManager::isLocalThread() {
     bool result = mThreadId == Utils::CurrentThread::gettid();
     if(!result){
-        Log::LogInfo << "EventManager::isLocalThread==>"
+        Log::LogInfo << "ep::EventManager::isLocalThread==>"
                      << "EventManager created in:" << mThreadId << " isLocalThread called in:" << Utils::CurrentThread::gettid() << Log::endl;
     }
     return result;
@@ -90,7 +90,7 @@ void EventManager::runInLoop(const EventManager::Callback &callback) {
     if(isLocalThread()){
         callback();
     }else{
-        Log::LogInfo << "EventManager::runInLoop==>"
+        Log::LogInfo << "ep::EventManager::runInLoop==>"
                      << "called by foreign thread:" << Utils::CurrentThread::gettid() << " and turn to queueInLoop" << Log::endl;
         queueInLoop(callback);
     }
@@ -113,14 +113,14 @@ void EventManager::queueInLoop(const EventManager::Callback &callback) {
 void EventManager::handleRead() {
     uint64_t many;
     read(mEventFd.getFd(), &many, sizeof many);
-    Log::LogInfo << "EventManager::handleRead==>"
+    Log::LogInfo << "ep::EventManager::handleRead==>"
                  << "Eventfd found " << many << " item(s)" << Log::endl;
 }
 
 void EventManager::wakeup() {
     uint64_t one = 1;
     write(mEventFd.getFd(), &one, sizeof one);
-    Log::LogInfo << "EventManager::wakeup==>"
+    Log::LogInfo << "ep::EventManager::wakeup==>"
                  << "send a signal to wakeup" << Log::endl;
 }
 

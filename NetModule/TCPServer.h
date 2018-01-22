@@ -16,7 +16,7 @@ namespace NetModule{
     public:
         typedef std::map<std::string, std::shared_ptr<TCPConnection>> ConnectionMap;
         typedef std::function<void(std::weak_ptr<TCPConnection>)> ConnectionCallback;
-        typedef std::function<void(std::weak_ptr<TCPConnection>, Utils::Buffer*, ::time_t)> MessageCallback;
+        typedef std::function<void(std::weak_ptr<TCPConnection>, ::time_t)> MessageCallback;
 
         explicit TCPServer(int port);
         ~TCPServer();

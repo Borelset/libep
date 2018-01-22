@@ -14,7 +14,7 @@ namespace NetModule{
     {
     public:
         typedef std::function<void(std::weak_ptr<TCPConnection>)> ConnectionCallback;
-        typedef std::function<void(std::weak_ptr<TCPConnection>, Utils::Buffer*, ::time_t)> MessageCallback;
+        typedef std::function<void(std::weak_ptr<TCPConnection>, ::time_t)> MessageCallback;
         typedef std::function<void(std::shared_ptr<TCPConnection>)> CloseCallback;
         TCPConnection(std::string name,
                       int fd,
@@ -34,6 +34,8 @@ namespace NetModule{
         void connectionDestroy();
         bool isConnected();
         ep::EventManager* getManager();
+        Utils::Buffer* getReadBuffer();
+        Utils::Buffer* getWriteBuffer();
     private:
         enum TCPConnectionState{
             TCSConnecting,

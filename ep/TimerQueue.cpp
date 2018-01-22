@@ -14,7 +14,7 @@ using namespace ep;
 
 int createTimerFd(){
     int timerFd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-    Log::LogInfo << "TimerQueue::createTimerFd==>"
+    Log::LogInfo << "ep::TimerQueue::createTimerFd==>"
                  << "created timerFd: " << timerFd << Log::endl;
     return timerFd;
 }
@@ -34,7 +34,7 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(time_t now) {
     TimerList::iterator it = mTimerList.lower_bound(boundary);
     std::copy(mTimerList.begin(), it, std::back_inserter(result));
     mTimerList.erase(mTimerList.begin(), it);
-    Log::LogInfo << "TimerQueue::getExpired==>"
+    Log::LogInfo << "ep::TimerQueue::getExpired==>"
                  << "Found " << result.size() << " items, and left " << mTimerList.size() << Log::endl;
     if(!mTimerList.empty())
         resetTimerFd(mTimerList.begin()->first - Utils::getTime());
@@ -44,7 +44,7 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(time_t now) {
 void TimerQueue::handleRead() {
     uint64_t many;
     read(mTimerFd.getFd(), &many, sizeof many);
-    Log::LogInfo << "TimerQueue::handleRead==>"
+    Log::LogInfo << "ep::TimerQueue::handleRead==>"
                  << "There is " << many << " timer(s) time out" << Log::endl;
     std::vector<Entry> timeout = getExpired(Utils::getTime());
     for(auto it = timeout.begin(); it != timeout.end(); it++){
@@ -87,7 +87,7 @@ void TimerQueue::resetTimerFd(time_t time) {
     bzero(&now, sizeof(itimerspec));
     now.it_value.tv_sec = time;
     timerfd_settime(mTimerFd.getFd(), 0, &now, nullptr);
-    Log::LogInfo << "TimerQueue::resetTimerFd==>"
+    Log::LogInfo << "ep::TimerQueue::resetTimerFd==>"
                  << "set alert after " << time << "second(s)" << Log::endl;
 }
 

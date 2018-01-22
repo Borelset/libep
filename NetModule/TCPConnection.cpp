@@ -42,7 +42,7 @@ void NetModule::TCPConnection::readHandle() {
     Log::LogInfo << "NetModule::TCPConnection::readHandle==>"
                  << "read " << n << " character(s)" << Log::endl;
     if(n > 0){
-        if(mMessageCallback) mMessageCallback(shared_from_this(), &mReadBuffer, Utils::getTime());
+        if(mMessageCallback) mMessageCallback(shared_from_this(), Utils::getTime());
     }else if(n == 0){
         Log::LogInfo << "NetModule::TCPConnection::readHandle==>"
                      << "Ready to close" << Log::endl;
@@ -213,5 +213,13 @@ bool NetModule::TCPConnection::isConnected() {
 
 ep::EventManager* NetModule::TCPConnection::getManager() {
     return mEventManagerPtr;
+}
+
+Utils::Buffer *NetModule::TCPConnection::getReadBuffer() {
+    return &mReadBuffer;
+}
+
+Utils::Buffer *NetModule::TCPConnection::getWriteBuffer() {
+    return &mWriteBuffer;
 }
 
