@@ -53,11 +53,12 @@ void NetModule::TCPServer::newConnection(int fd, NetModule::SockAddr &addr) {
     mConnectionMap[connName] = connPtr;
     connPtr->setMessageCallback(mMessageCallback);
     connPtr->setConnectionCallback(mConnectionCallback);
-    connPtr->setCloseCallback(std::bind(&TCPServer::removeConnection, this, std::placeholders::_1));
+    connPtr->setCloseCallback(
+            std::bind(&TCPServer::removeConnection, this, std::placeholders::_1)
+    );
     ioManager->runInLoop(
             std::bind(&TCPConnection::connectionEstablish, connPtr)
     );
-    //connPtr->connectionEstablish();
 }
 
 void NetModule::TCPServer::setMessageCallback(const MessageCallback & callback) {
@@ -66,22 +67,30 @@ void NetModule::TCPServer::setMessageCallback(const MessageCallback & callback) 
     mMessageCallback = callback;
 }
 
-void NetModule::TCPServer::removeConnection(std::shared_ptr<NetModule::TCPConnection> connPtr) {
+void NetModule::TCPServer::removeConnection(std::weak_ptr<NetModule::TCPConnection> connPtr) {
+    Log::LogInfo << "NetModule::TCPServer::removeConnection==>"
+                 << "removeConnection" << Log::endl;
     mEventManager.runInLoop(
             std::bind(&TCPServer::removeConnectionInOwnerManager, this, connPtr)
     );
 }
 
-void NetModule::TCPServer::removeConnectionInOwnerManager(std::shared_ptr<NetModule::TCPConnection> connPtr) {
-    size_t n = mConnectionMap.erase(connPtr->getName());
-    Log::LogInfo << "NetModule::TCPServer::removeConnection==>"
+void NetModule::TCPServer::removeConnectionInOwnerManager(std::weak_ptr<NetModule::TCPConnection> connPtr) {
+    auto sharedPtr = connPtr.lock();
+    if(sharedPtr == nullptr){
+        Log::LogError << "NetModule::TCPServer::removeConnectionInOwnerManager==>"
+                     << "Connection has been destructed.." << Log::endl;
+        return;
+    }
+    size_t n = mConnectionMap.erase(sharedPtr->getName());
+    Log::LogInfo << "NetModule::TCPServer::removeConnectionInOwnerManager==>"
                  << "mConnectionMap earse " << n << " item(s)" << Log::endl;
     if(n != 1){
-        Log::LogInfo << "NetModule::TCPServer::removeConnection==>"
+        Log::LogInfo << "NetModule::TCPServer::removeConnectionInOwnerManager==>"
                      << "Wrong number things erased from ConnectionMap. They have same Connection Name but it should not." << Log::endl;
     }
-    ep::EventManager* ioManager = connPtr->getManager();
+    ep::EventManager* ioManager = sharedPtr->getManager();
     ioManager->runInLoop(
-            std::bind(&TCPConnection::connectionDestroy, connPtr)
+            std::bind(&TCPConnection::connectionDestroy, sharedPtr)
     );
 }

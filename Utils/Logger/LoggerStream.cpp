@@ -42,7 +42,7 @@ Log::LoggerStream &Log::LoggerStream::operator<<(Log::LoggerStream&) {
 Log::LoggerStream &Log::LoggerStream::operator<<(Log::LoggerEndl &) {
     std::cout << std::endl;
     if(mOutput){
-        mLogger.lock()->append("\n", 1);
+        mLogger.lock()->append((char*)"\n", 1);
     }
     return *this;
 }

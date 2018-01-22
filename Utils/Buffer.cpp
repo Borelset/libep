@@ -76,7 +76,7 @@ int Utils::Buffer::readFromFd(int fd) {
     if(n<0){
         std::cout << "Utils::Buffer::readFromFd==>>"
                   << "readv error at fd: " << fd << std::endl;
-    }else if(n < getWriteable()){
+    }else if(n <= getWriteable()){
         mWriteIndex += n;
     }else{
         unsigned long length = static_cast<unsigned long>(n) - static_cast<unsigned long>(getWriteable());

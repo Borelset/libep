@@ -9,6 +9,9 @@
 
 namespace Log{
     static void SetLogPath(char* path){
+        if(path == nullptr){
+            gLoggerManager.setLogLevel(Nothing);
+        }
         gLoggerManager.setLogPath(path);
     }
 

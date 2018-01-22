@@ -5,6 +5,7 @@
 #include "EventManager.h"
 #include "EventManagerThreadPool.h"
 #include "../Utils/Logger/LoggerManager.h"
+#include "../Utils/CurrentThread.h"
 
 ep::EventManagerThreadPool::EventManagerThreadPool(EventManager *eventManager) :
         mBaseEventManager(eventManager),
@@ -19,6 +20,7 @@ ep::EventManagerThreadPool::~EventManagerThreadPool() {
 
 }
 
+
 void ep::EventManagerThreadPool::setThreadNum(int num) {
     mThreadCount = num;
     for(int i=0; i<num; i++){
@@ -26,7 +28,7 @@ void ep::EventManagerThreadPool::setThreadNum(int num) {
         mThreads.push_back(newThread);
     }
     Log::LogInfo << "ep::EventManagerThreadPool::setThreadNum==>"
-                 << mThreadCount << " Threads established.." << Log::endl;
+                 << mThreadCount << " Threads established in thread:" << Utils::CurrentThread::gettid() << Log::endl;
 }
 
 void ep::EventManagerThreadPool::start() {

@@ -22,7 +22,6 @@ namespace Utils{
         }
 
         static void* callbackProxy(void* th){
-            std::cout << "Current::callbackProxy==>" << std::endl;
             Thread* thread = (Thread*)th;
             thread->setTid(gettid());
             thread->getCallback()();

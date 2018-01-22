@@ -14,7 +14,7 @@
 
 namespace Log{
     static const int BUFFER_NUMS = 2;
-    static const int BUFFER_FLASH_LIMIT = 2;
+    static const int BUFFER_FLASH_THRESHOLD = 20;
 
     enum LogLevel{
         Info,
@@ -42,6 +42,7 @@ namespace Log{
         int mCounter;
         int mUsing;
         bool mQuit;
+        bool mIsLog;
         LogLevel mLevel;
         std::unique_ptr<Utils::FD> mLogFilePtr;
 

@@ -70,7 +70,5 @@ void EpollHandler::epollCtlManager(int operate, Channel * channel) {
 }
 
 void EpollHandler::removeChannel(Channel * channel) {
-    std::cout << "before remove" <<std::endl;
     mChannelMap[channel->getFd()] = nullptr;
-    std::cout << "after remove" <<std::endl;
 }

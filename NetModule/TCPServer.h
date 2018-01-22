@@ -23,8 +23,8 @@ namespace NetModule{
         void start();
         void setConnectionCallback(const ConnectionCallback&);
         void setMessageCallback(const MessageCallback&);
-        void removeConnection(std::shared_ptr<TCPConnection>);
-        void removeConnectionInOwnerManager(std::shared_ptr<TCPConnection>);
+        void removeConnection(std::weak_ptr<TCPConnection>);
+        void removeConnectionInOwnerManager(std::weak_ptr<TCPConnection>);
     private:
         ep::EventManager mEventManager;
         ep::EventManagerThreadPool mEventManagerThreadPool;

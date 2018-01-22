@@ -4,6 +4,7 @@
 
 #include "EventManagerThread.h"
 #include "../Utils/CurrentThread.h"
+#include "../Utils/Logger/LoggerManager.h"
 
 using namespace ep;
 
@@ -34,6 +35,8 @@ EventManager *EventManagerThread::getEventManagerHandler() {
 
 
 void EventManagerThread::threadFunction() {
+    Log::LogInfo << "ep::EventManagerThread::threadFunction==>"
+                 << "Thread created:" << Utils::CurrentThread::gettid() << Log::endl;
     EventManager eventManager;
     {
         Utils::MutexLockGuard localGuard(mMutexLock);

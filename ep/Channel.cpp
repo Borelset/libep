@@ -14,7 +14,9 @@ void Channel::process() {
     if(mRevent & EpollWriteEvent)
         mWriteCallback();
     if(mRevent & EpollErrorEvent)
-        mErrorCallback();
+        if(mErrorCallback){
+            mErrorCallback();
+        }
 }
 
 void Channel::enableRead() {

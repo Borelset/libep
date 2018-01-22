@@ -27,7 +27,7 @@ NetModule::TCPConnection::TCPConnection(std::string name, int fd,
                  << "Construction" << Log::endl;
     mChannel->setReadCallback(std::bind(&TCPConnection::readHandle, this));
     mChannel->setWriteCallback(std::bind(&TCPConnection::writeHandle, this));
-    mChannel->setErrorCallback(std::bind(&TCPConnection::errorHandle, this));
+    mChannel->setErrorCallback(nullptr);
     mSocket->setKeepAlive(true);
 }
 
@@ -69,6 +69,7 @@ void NetModule::TCPConnection::setConnectionCallback(
 void NetModule::TCPConnection::closeHandle() {
     Log::LogInfo << "NetModule::TCPConnection::closeHandle==>"
                  << "close" << Log::endl;
+    setState(TCSDisconnecting);
     if(!mEventManagerPtr->isLocalThread()){
         Log::LogError << "NetModule::TCPConnection::closeHandle==>>"
                      << "this should be called in local thread" << Log::endl;
@@ -116,6 +117,8 @@ int NetModule::TCPConnection::getPort() {
 }
 
 void NetModule::TCPConnection::send(const std::string& message) {
+    Log::LogInfo << "NetModule::TCPConnection::send==>"
+                 << "Send message" << Log::endl;
     if(mState == TCSConnected){
         if(mEventManagerPtr->isLocalThread()){
             sendInLoop(message);
@@ -137,6 +140,8 @@ void NetModule::TCPConnection::shutDown() {
 }
 
 void NetModule::TCPConnection::sendInLoop(const std::string& message) {
+    Log::LogInfo << "NetModule::TCPConnection::sendInLoop==>"
+                 << "Send message" << Log::endl;
     ssize_t writeChars = 0;
     if(!mChannel->isWriting() && mWriteBuffer.getReadble() == 0){
         writeChars = ::write(mFd.getFd(), message.c_str(), message.size());
@@ -146,7 +151,11 @@ void NetModule::TCPConnection::sendInLoop(const std::string& message) {
             writeChars = 0;
         }
     }
+    Log::LogInfo << "NetModule::TCPConnection::sendInLoop==>"
+                 << "Write " << writeChars << " character(s)" << Log::endl;
     if(writeChars < message.size()){
+        Log::LogInfo << "NetModule::TCPConnection::sendInLoop==>"
+                     << "Some message left" << Log::endl;
         mWriteBuffer.writeBuffer(
                 (char*)message.data() + writeChars, message.size()-writeChars);
         if(!mChannel->isWriting()){
@@ -177,7 +186,7 @@ void NetModule::TCPConnection::writeHandle() {
             if(mWriteBuffer.getReadble() == 0){
                 mChannel->disableWrite();
                 if(mState == TCSDisconnecting)
-                    shutDown();
+                    shutDownInLoop();
             }else{
                 Log::LogInfo << "NetModule::TCPConnection::writeHandle==>"
                              << mName << ":more message need to write" << Log::endl;

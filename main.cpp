@@ -32,11 +32,11 @@ void callback(int fd, NetModule::SockAddr addr){
 }
 
 void messagecallback(std::weak_ptr<NetModule::TCPConnection> tcpc, Utils::Buffer* readBuffer, time_t time){
-    std::cout << "Connection " << tcpc.lock()->getName() << " from " << tcpc.lock()->getIp() << ":" << tcpc.lock()->getPort()
+    auto sharedPtr = tcpc.lock();
+    std::cout << "Connection " << sharedPtr->getName() << " from " << sharedPtr->getIp() << ":" << sharedPtr->getPort()
               << " Receive " << readBuffer->getReadble() << " character(s) at " << time << std::endl;
     std::cout << "Message:" << readBuffer->getContent() << std::endl;
-    tcpc.lock()->send(message1);
-    tcpc.lock()->shutDown();
+    sharedPtr->send(message1);
 }
 
 void connectioncallback(std::weak_ptr<NetModule::TCPConnection> tcpc){
@@ -44,7 +44,6 @@ void connectioncallback(std::weak_ptr<NetModule::TCPConnection> tcpc){
         std::cout << "Connection " << tcpc.lock()->getName() << " from " << tcpc.lock()->getIp() << ":" << tcpc.lock()->getPort() << std::endl;
         tcpc.lock()->send(message1);
         tcpc.lock()->send(message2);
-        tcpc.lock()->shutDown();
     }else{
         std::cout << "Connection " << tcpc.lock()->getName() << " down"<< std::endl;
     }
@@ -63,14 +62,6 @@ void epTest(){
     sleep(1000);
 }
 
-void acceptorTest(){
-    EventManager* eventManager = new EventManager;
-    NetModule::Acceptor mAcceptor(eventManager, 9981);
-    mAcceptor.setListonCallback(callback);
-    mAcceptor.listen();
-    eventManager->loop();
-}
-
 void tcpserverTest(){
     NetModule::TCPServer tcpServer(9981);
     tcpServer.setMessageCallback(messagecallback);
@@ -79,11 +70,6 @@ void tcpserverTest(){
 
 
 int main() {
-    Log::SetLogPath("./log.log");
-    Log::SetLogLevel(Log::Info);
-    sleep(1);
-
-    std::cout << Utils::CurrentThread::gettid() << std::endl;
     tcpserverTest();
 
     return 0;
