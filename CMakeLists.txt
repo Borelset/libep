@@ -1,8 +1,22 @@
 cmake_minimum_required(VERSION 3.9)
-project(libep)
+project(ep)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(libep main.cpp ep/Channel.h ep/Channel.cpp ep/epollUtils.h ep/EventManager.h ep/EpollHandler.h ep/EpollHandler.cpp ep/EventManager.cpp ep/Timer.h ep/Timer.cpp ep/TimerQueue.h ep/TimerQueue.cpp Utils/Mutex.h Utils/Mutex.cpp Utils/CurrentThread.h Utils/Thread.h Utils/Thread.cpp ep/EventManagerThread.h ep/EventManagerThread.cpp Utils/FD.h Utils/FD.cpp NetModule/Acceptor.h Utils/noncopyable.h Utils/Utils.h NetModule/Socket.h NetModule/Socket.cpp NetModule/Acceptor.cpp NetModule/SockAddr.h NetModule/SockAddr.cpp NetModule/TCPServer.h NetModule/TCPConnection.h NetModule/TCPServer.cpp NetModule/TCPConnection.cpp NetModule/netUtils.h Utils/Buffer.h Utils/Buffer.cpp ep/EventManagerThreadPool.h ep/EventManagerThreadPool.cpp NetModule/TCPClient.h NetModule/TCPClient.cpp NetModule/Connector.h NetModule/Connector.cpp NetModule/TCPConnectionHolder.h NetModule/TCPConnectionHolder.cpp NetModule/TimingWheel.h NetModule/TimingWheel.cpp Utils/Logger/Logger.h Utils/Logger/Logger.cpp Utils/Logger/LoggerStream.h Utils/Logger/LoggerStream.cpp Utils/Logger/LoggerManager.h Utils/Logger/LoggerManager.cpp Utils/Logger/LoggerUtils.h)
+aux_source_directory(./ ROOTSRC)
+aux_source_directory(./ep EPSRC)
+aux_source_directory(./NetModule NETSRC)
+aux_source_directory(./Utils UTILSSRC)
+aux_source_directory(./Utils/Logger LOGSRC)
+aux_source_directory(./test TESTSRC)
+include_directories(./ ./ep ./NetModule ./Utils ./Utils/Logger)
 
-target_link_libraries(libep pthread)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/build/bin)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/build/lib)
+
+add_library(ep SHARED ${ROOTSRC} ${EPSRC} ${NETSRC} ${UTILSSRC} ${LOGSRC})
+add_executable(eptest ${ROOTSRC} ${EPSRC} ${NETSRC} ${UTILSSRC} ${LOGSRC} ${TESTSRC})
+target_link_libraries(eptest pthread)
+target_link_libraries(ep pthread)
+install(TARGETS ep
+        LIBRARY DESTINATION lib)
