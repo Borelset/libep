@@ -5,18 +5,26 @@
 #include <arpa/inet.h>
 #include "TCPServer.h"
 #include "../Utils/Logger/LoggerManager.h"
+#include "TCPConnectionHolder.h"
 
 NetModule::TCPServer::TCPServer(int port):
         mAcceptor(&mEventManager, port),
+        mTimingWheel(DEFAULT_TIMINGWHEEL),
         mConnName("Connection"),
         mNextConnId(0),
         mLocalAddr(mAcceptor.getLocalAddr()),
         mEventManagerThreadPool(&mEventManager)
 {
-    mAcceptor.setListonCallback(std::bind(&TCPServer::newConnection, this, std::placeholders::_1, std::placeholders::_2));
+    mAcceptor.setListonCallback(
+            std::bind(&TCPServer::newConnection, this, std::placeholders::_1, std::placeholders::_2) );
     mEventManagerThreadPool.setThreadNum(10);
     Log::LogInfo << "NetModule::TCPServer::TCPServer==>"
                  << "Construction" << Log::endl;
+    mEventManager.runAfter(
+            std::bind(&TimingWheel::goAhead, &mTimingWheel),
+            1,
+            1
+    );
 }
 
 NetModule::TCPServer::~TCPServer() {
@@ -48,16 +56,26 @@ void NetModule::TCPServer::newConnection(int fd, NetModule::SockAddr &addr) {
                  << "\n\tnew connection "<< connName << Log::endl
                  << "\tfrom " << inet_ntoa(addr.getAddr().sin_addr) << ":" << addr.getAddr().sin_port << Log::endl;
     ep::EventManager* ioManager = mEventManagerThreadPool.getNextManager();
-    std::shared_ptr<TCPConnection> connPtr(
-            new TCPConnection(connName, fd, mLocalAddr, addr, ioManager));
-    mConnectionMap[connName] = connPtr;
-    connPtr->setMessageCallback(mMessageCallback);
-    connPtr->setConnectionCallback(mConnectionCallback);
-    connPtr->setCloseCallback(
+    //std::shared_ptr<TCPConnection> connPtr(
+    std::shared_ptr<TCPConnectionHolder> connHolderPtr(
+            new TCPConnectionHolder(
+                    new TCPConnection(connName, fd, mLocalAddr, addr, ioManager),
+                    ioManager
+            )
+    );
+    mConnectionMap[connName] = connHolderPtr;
+    mTimingWheel.refresh(connHolderPtr);
+    auto sharedPtr = connHolderPtr->getTCPConnectionPtr().lock();
+    sharedPtr->setMessageCallback(mMessageCallback);
+    sharedPtr->setConnectionCallback(mConnectionCallback);
+    sharedPtr->setCloseCallback(
             std::bind(&TCPServer::removeConnection, this, std::placeholders::_1)
     );
+    sharedPtr->setRefreshCallback(
+            std::bind(&TCPServer::refreshConnection, this, std::placeholders::_1)
+    );
     ioManager->runInLoop(
-            std::bind(&TCPConnection::connectionEstablish, connPtr)
+            std::bind(&TCPConnection::connectionEstablish, sharedPtr)
     );
 }
 
@@ -93,4 +111,9 @@ void NetModule::TCPServer::removeConnectionInOwnerManager(std::weak_ptr<NetModul
     ioManager->runInLoop(
             std::bind(&TCPConnection::connectionDestroy, sharedPtr)
     );
+}
+
+void NetModule::TCPServer::refreshConnection(std::string & connName) {
+    auto connHolderPtr = mConnectionMap[connName].lock();
+    mTimingWheel.refresh(connHolderPtr);
 }

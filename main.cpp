@@ -9,7 +9,8 @@ std::string message1 = "hello everyone";
 
 void messageCallback(std::weak_ptr<NetModule::TCPConnection> tcpc, time_t time){
     auto sharedPtr = tcpc.lock();
-    if(!sharedPtr) return;
+    if(sharedPtr == nullptr) return;
+
     printf("Receive %lu character(s) at %lu\n",
            sharedPtr->getReadBuffer()->getReadble(),
            time );
@@ -20,7 +21,8 @@ void messageCallback(std::weak_ptr<NetModule::TCPConnection> tcpc, time_t time){
 
 void connectionCallback(std::weak_ptr<NetModule::TCPConnection> tcpc){
     auto sharedPtr = tcpc.lock();
-    if(!sharedPtr) return;
+    if(sharedPtr == nullptr) return;
+
     if(sharedPtr->isConnected()){
         printf("New connection %s from %s:%d\n",
                sharedPtr->getName().c_str(),

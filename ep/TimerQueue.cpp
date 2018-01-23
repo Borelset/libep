@@ -75,10 +75,13 @@ bool TimerQueue::addTimerInQueue(Timer *timer) {
 bool TimerQueue::addTimer(const TimerQueue::TimerCallback &timerCallback,
                           time_t time,
                           int interval) {
+    Log::LogInfo << "ep::TimerQueue::addTimer==>"
+                 << "add a timer" << Log::endl;
     time_t now = Utils::getTime();
     Timer* newTimer = new Timer(timerCallback, time+now, interval);
-    TimerCallback added = std::bind(&TimerQueue::addTimerInQueue, this, newTimer);
-    mEventManager->runInLoop(added);
+    mEventManager->runInLoop(
+            std::bind(&TimerQueue::addTimerInQueue, this, newTimer)
+    );
     return true;
 }
 
@@ -88,7 +91,7 @@ void TimerQueue::resetTimerFd(time_t time) {
     now.it_value.tv_sec = time;
     timerfd_settime(mTimerFd.getFd(), 0, &now, nullptr);
     Log::LogInfo << "ep::TimerQueue::resetTimerFd==>"
-                 << "set alert after " << time << "second(s)" << Log::endl;
+                 << "set alert after " << time << " second(s)" << Log::endl;
 }
 
 TimerQueue::~TimerQueue() {

@@ -9,6 +9,7 @@
 #include "TCPConnection.h"
 #include "../Utils/Utils.h"
 #include "../Utils/Logger/LoggerManager.h"
+#include "../Utils/CurrentThread.h"
 
 NetModule::TCPConnection::TCPConnection(std::string name, int fd,
                                         NetModule::SockAddr &localAddr,
@@ -43,6 +44,7 @@ void NetModule::TCPConnection::readHandle() {
                  << "read " << n << " character(s)" << Log::endl;
     if(n > 0){
         if(mMessageCallback) mMessageCallback(shared_from_this(), Utils::getTime());
+        if(mRefreshCallback) mRefreshCallback(mName);
     }else if(n == 0){
         Log::LogInfo << "NetModule::TCPConnection::readHandle==>"
                      << "Ready to close" << Log::endl;
@@ -221,5 +223,13 @@ Utils::Buffer *NetModule::TCPConnection::getReadBuffer() {
 
 Utils::Buffer *NetModule::TCPConnection::getWriteBuffer() {
     return &mWriteBuffer;
+}
+
+void NetModule::TCPConnection::forceClose() {
+    closeHandle();
+}
+
+void NetModule::TCPConnection::setRefreshCallback(const NetModule::TCPConnection::RefreshCallback &callback) {
+    mRefreshCallback = callback;
 }
 

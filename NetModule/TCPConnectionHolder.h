@@ -7,12 +7,21 @@
 
 #include <memory>
 #include "../Utils/noncopyable.h"
-#include "TCPConnection.h"
+#include "../ep/EventManager.h"
 
 namespace NetModule{
-    class TCPConnetionHolder : Utils::noncopyable{
+    class TCPConnection;
+
+    class TCPConnectionHolder{
     public:
-        TCPConnetionHolder(std::shared_ptr<TCPConnection> connPtr);
+        TCPConnectionHolder();
+        explicit TCPConnectionHolder(TCPConnection* connPtr, ep::EventManager*);
+        ~TCPConnectionHolder();
+        std::weak_ptr<TCPConnection> getTCPConnectionPtr();
+
+    private:
+        ep::EventManager* mEventManager;
+        std::shared_ptr<TCPConnection> mTCPConnectionPtr;
     };
 }
 

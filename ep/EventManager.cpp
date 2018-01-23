@@ -70,9 +70,10 @@ void EventManager::runAfter(std::function<void()> Callback,
                             time_t when,
                             int interval) {
     if(when <=0){
-        Log::LogWarning << "ep::EventManger::runAfter() invalid param"
-                        << Log::endl
+        Log::LogWarning << "ep::EventManger::runAfter==>"
+                        <<"invalid param. "
                         << "when == " << when << " smaller than 0" << Log::endl;
+        return;
     }
     mTimerQueue.addTimer(Callback, when, interval);
 }

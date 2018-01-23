@@ -10,11 +10,17 @@
 #include "Acceptor.h"
 #include "TCPConnection.h"
 #include "../ep/EventManagerThreadPool.h"
+#include "TimingWheel.h"
 
 namespace NetModule{
+    class TCPConnectionHolder;
+
+    const static int DEFAULT_TIMINGWHEEL = 10;
+
     class TCPServer : Utils::noncopyable{
     public:
-        typedef std::map<std::string, std::shared_ptr<TCPConnection>> ConnectionMap;
+        //typedef std::map<std::string, std::shared_ptr<TCPConnection>> ConnectionMap;
+        typedef std::map<std::string, std::weak_ptr<TCPConnectionHolder>> ConnectionMap;
         typedef std::function<void(std::weak_ptr<TCPConnection>)> ConnectionCallback;
         typedef std::function<void(std::weak_ptr<TCPConnection>, ::time_t)> MessageCallback;
 
@@ -25,11 +31,13 @@ namespace NetModule{
         void setMessageCallback(const MessageCallback&);
         void removeConnection(std::weak_ptr<TCPConnection>);
         void removeConnectionInOwnerManager(std::weak_ptr<TCPConnection>);
+        void refreshConnection(std::string&);
     private:
         ep::EventManager mEventManager;
         ep::EventManagerThreadPool mEventManagerThreadPool;
         Acceptor mAcceptor;
         ConnectionMap mConnectionMap;
+        TimingWheel mTimingWheel;
         const std::string mConnName;
         int mNextConnId;
         SockAddr mLocalAddr;

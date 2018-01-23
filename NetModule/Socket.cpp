@@ -54,7 +54,7 @@ int NetModule::Socket::accept(struct sockaddr_in * saddr) {
 }
 
 NetModule::Socket::~Socket() {
-    Log::LogInfo << "NetModule::Socket::~Socket"
+    Log::LogInfo << "NetModule::Socket::~Socket==>"
                  << "Socket with fd:" << mSocketFd.getFd() << " from " << inet_ntoa(mAddr.getAddr().sin_addr) << " releasing.." << Log::endl;
 }
 

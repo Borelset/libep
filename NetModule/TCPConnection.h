@@ -7,8 +7,11 @@
 
 #include "Socket.h"
 #include "../Utils/Buffer.h"
+#include "../ep/EventManager.h"
+#include "../ep/Channel.h"
 
 namespace NetModule{
+
     class TCPConnection : Utils::noncopyable,
                           public std::enable_shared_from_this<TCPConnection>
     {
@@ -16,6 +19,7 @@ namespace NetModule{
         typedef std::function<void(std::weak_ptr<TCPConnection>)> ConnectionCallback;
         typedef std::function<void(std::weak_ptr<TCPConnection>, ::time_t)> MessageCallback;
         typedef std::function<void(std::shared_ptr<TCPConnection>)> CloseCallback;
+        typedef std::function<void(std::string&)> RefreshCallback;
         TCPConnection(std::string name,
                       int fd,
                       SockAddr& localAddr,
@@ -25,6 +29,7 @@ namespace NetModule{
         void setMessageCallback(const MessageCallback& messageCallback);
         void setConnectionCallback(const ConnectionCallback& connectionCallback);
         void setCloseCallback(const CloseCallback& callback);
+        void setRefreshCallback(const RefreshCallback &callback);
         void send(const std::string& message);
         void shutDown();
         std::string getName();
@@ -36,6 +41,7 @@ namespace NetModule{
         ep::EventManager* getManager();
         Utils::Buffer* getReadBuffer();
         Utils::Buffer* getWriteBuffer();
+        void forceClose();
     private:
         enum TCPConnectionState{
             TCSConnecting,
@@ -62,6 +68,7 @@ namespace NetModule{
         ConnectionCallback mConnectionCallback;
         MessageCallback mMessageCallback;
         CloseCallback mCloseCallback;
+        RefreshCallback mRefreshCallback;
         Utils::Buffer mReadBuffer;
         Utils::Buffer mWriteBuffer;
     };
