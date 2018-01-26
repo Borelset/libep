@@ -24,11 +24,13 @@ bool Timer::isRepeat() {
     return mInterval != 0;
 }
 
-Timer *Timer::getRepeat() {
+void Timer::getRepeat() {
     mStartTime += mInterval;
-    return this;
 }
 
 time_t Timer::getStartTime() {
     return mStartTime;
+}
+
+Timer::~Timer() {
 }

@@ -54,28 +54,31 @@ void EventManager::setQuit() {
         wakeup();
 }
 
-void EventManager::runAt(std::function<void()> Callback,
+std::weak_ptr<Timer> EventManager::runAt(std::function<void()> Callback,
                          time_t when,
                          int interval) {
     time_t time_ = Utils::getTime();
+    std::weak_ptr<Timer> result;
     if(when - time_ > 0)
-        mTimerQueue.addTimer(Callback, when-Utils::getTime(), interval);
+        result = mTimerQueue.addTimer(Callback, when-Utils::getTime(), interval);
     else
         Log::LogWarning << "ep::EventManger::runAt() invalid param"
                         << Log::endl
                         << "when == " << when << " smaller than getTime() == " << time_ << Log::endl;
+    return result;
 }
 
-void EventManager::runAfter(std::function<void()> Callback,
+std::weak_ptr<Timer> EventManager::runAfter(std::function<void()> Callback,
                             time_t when,
                             int interval) {
+    std::weak_ptr<Timer> result;
     if(when <=0){
         Log::LogWarning << "ep::EventManger::runAfter==>"
                         <<"invalid param. "
                         << "when == " << when << " smaller than 0" << Log::endl;
-        return;
+        return result;
     }
-    mTimerQueue.addTimer(Callback, when, interval);
+    return mTimerQueue.addTimer(Callback, when, interval);
 }
 
 bool EventManager::isLocalThread() {
@@ -146,3 +149,10 @@ void EventManager::removeChannel(Channel * channel) {
                  << "Channel " << channel->getFd() << " removed" << Log::endl;
     mEpollHandlerPtr->removeChannel(channel);
 }
+
+void EventManager::stopTimer(std::weak_ptr<Timer> timer) {
+    Log::LogInfo << "ep::EventManager::stopTimer==>"
+                 << "stop timer" << Log::endl;
+    mTimerQueue.removeTimer(timer);
+}
+

@@ -30,15 +30,21 @@ TimerQueue::TimerQueue(EventManager *eventManager):
 
 std::vector<TimerQueue::Entry> TimerQueue::getExpired(time_t now) {
     std::vector<Entry> result;
-    Entry boundary = std::make_pair(now, (Timer*)UINTPTR_MAX);
+
+    Entry boundary = std::make_pair(
+            now, std::shared_ptr<Timer>((Timer*)UINTPTR_MAX, [](Timer*){})     //need special dtor(do nothing)
+    );
+
     TimerList::iterator it = mTimerList.lower_bound(boundary);
     std::copy(mTimerList.begin(), it, std::back_inserter(result));
-    mTimerList.erase(mTimerList.begin(), it);
+    mTimerList.erase(mTimerList.begin(), it);                        // shared_ptr erase from mTimerList
     Log::LogInfo << "ep::TimerQueue::getExpired==>"
-                 << "Found " << result.size() << " items, and left " << mTimerList.size() << Log::endl;
+                 << "Found " << result.size() << " item(s) timeout, and left " << mTimerList.size() << Log::endl;
     if(!mTimerList.empty())
-        resetTimerFd(mTimerList.begin()->first - Utils::getTime());
-    return result;
+        resetTimerFd(mTimerList.begin()->first - Utils::getTime());  // set new timer
+
+    return result;                                                   // caution! return including shared_ptr
+                                                                     // ensure usage WILL NOT lead to leak
 }
 
 void TimerQueue::handleRead() {
@@ -46,43 +52,44 @@ void TimerQueue::handleRead() {
     read(mTimerFd.getFd(), &many, sizeof many);
     Log::LogInfo << "ep::TimerQueue::handleRead==>"
                  << "There is " << many << " timer(s) time out" << Log::endl;
-    std::vector<Entry> timeout = getExpired(Utils::getTime());
+    std::vector<Entry> timeout = getExpired(Utils::getTime());       // get shared_ptr
     for(auto it = timeout.begin(); it != timeout.end(); it++){
         it->second->run();
         if(it->second->isRepeat()){
-            Timer* repeatTimer = it->second->getRepeat();
-            addTimerInQueue(repeatTimer);
+            it->second->getRepeat();
+            addTimerInQueue(it->second);                             // add back
         }else{
-            delete it->second;
+            Log::LogInfo << "ep::TimerQueue::handleRead==>"
+                         << "auto release" << Log::endl;
+            //shared_ptr auto release;                               // ignore to release
         }
-    }
+    }                                                                // return of getExpired release
 }
 
 
-bool TimerQueue::addTimerInQueue(Timer *timer) {
+std::weak_ptr<Timer> TimerQueue::addTimerInQueue(std::shared_ptr<Timer> timer) {
     Entry newEntry = std::make_pair(timer->getStartTime(), timer);
 
     if(mTimerList.begin()->first > timer->getStartTime() || mTimerList.empty()){
         resetTimerFd(timer->getStartTime() - Utils::getTime());
-        mTimerList.insert(newEntry);
-        return true;
+        mTimerList.insert(newEntry);  // shared saved in mTimerList
     }else{
         mTimerList.insert(newEntry);
-        return false;
     }
+    return timer; // convert to weak
 }
 
-bool TimerQueue::addTimer(const TimerQueue::TimerCallback &timerCallback,
+std::weak_ptr<Timer> TimerQueue::addTimer(const TimerQueue::TimerCallback &timerCallback,
                           time_t time,
                           int interval) {
     Log::LogInfo << "ep::TimerQueue::addTimer==>"
                  << "add a timer" << Log::endl;
     time_t now = Utils::getTime();
-    Timer* newTimer = new Timer(timerCallback, time+now, interval);
+    std::shared_ptr<Timer> newTimer(new Timer(timerCallback, time+now, interval));
     mEventManager->runInLoop(
             std::bind(&TimerQueue::addTimerInQueue, this, newTimer)
     );
-    return true;
+    return newTimer; // convert to weak
 }
 
 void TimerQueue::resetTimerFd(time_t time) {
@@ -95,4 +102,34 @@ void TimerQueue::resetTimerFd(time_t time) {
 }
 
 TimerQueue::~TimerQueue() {
+}
+
+void TimerQueue::removeTimer(std::weak_ptr<Timer>& timer) {
+    Log::LogInfo << "ep::TimerQueue::removeTimer==>"
+                 << "removeTimer" << Log::endl;
+    mEventManager->runInLoop(
+            std::bind(&TimerQueue::removeTimerInQueue, this, timer)
+    );
+}
+
+void TimerQueue::removeTimerInQueue(TimerQueue::TimerPtr & timer) {
+    Log::LogInfo << "ep::TimerQueue::removeTimerInQueue==>"
+                 << "removeTimer" << Log::endl;
+    auto sPtr = timer.lock();
+    if(sPtr == nullptr) return;
+    auto searchEntry = std::make_pair<time_t, std::shared_ptr<Timer>>(
+            sPtr->getStartTime(), timer.lock()
+    );
+
+    auto tempTimer = mTimerList.find(searchEntry);
+    if(tempTimer!= mTimerList.end()){
+        if(tempTimer == mTimerList.begin()){
+            auto iter = mTimerList.begin();
+            iter++;
+            resetTimerFd(iter->first);
+        }
+        mTimerList.erase(tempTimer);
+        return;
+    }
+    return;
 }
