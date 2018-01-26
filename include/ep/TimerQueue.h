@@ -8,6 +8,7 @@
 #include <ctime>
 #include <set>
 #include <vector>
+#include <memory>
 #include "Timer.h"
 #include "Channel.h"
 #include "../Utils/FD.h"
@@ -16,21 +17,24 @@ namespace ep{
     class TimerQueue : Utils::noncopyable{
     public:
         typedef std::function<void()> TimerCallback;
-        typedef std::pair<time_t, Timer*> Entry;
+        typedef std::weak_ptr<Timer> TimerPtr;
+        typedef std::pair<time_t, std::shared_ptr<Timer>> Entry;
         typedef std::set<Entry> TimerList;
         explicit TimerQueue(EventManager* eventManager);
         ~TimerQueue();
-        std::vector<Entry> getExpired(time_t now);
-        void handleRead();
-        bool addTimerInQueue(Timer *timer);
-        bool addTimer(const TimerCallback& timerCallback, time_t time, int interval);
-        void resetTimerFd(time_t time);
+        TimerPtr addTimer(const TimerCallback& timerCallback, time_t time, int interval);
+        void removeTimer(TimerPtr&);
     private:
         Utils::FD mTimerFd;
         EventManager* mEventManager;
         TimerList mTimerList;
         Channel mTimerQueueChannel;
 
+        TimerPtr addTimerInQueue(std::shared_ptr<Timer> timer);
+        void handleRead();
+        std::vector<Entry> getExpired(time_t now);
+        void resetTimerFd(time_t time);
+        void removeTimerInQueue(TimerPtr&);
     };
 }
 

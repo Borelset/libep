@@ -27,10 +27,11 @@ namespace ep{
         void updateChannel(Channel*);
         void removeChannel(Channel*);
         void setQuit();
-        void runAt(std::function<void()> Callback, time_t when, int interval);
-        void runAfter(std::function<void()> Callback, time_t when, int interval);
+        std::weak_ptr<Timer> runAt(std::function<void()> Callback, time_t when, int interval);
+        std::weak_ptr<Timer> runAfter(std::function<void()> Callback, time_t when, int interval);
         bool isLocalThread();
         void runInLoop(const Callback& callback);
+	void stopTimer(std::weak_ptr<Timer>);
     private:
         std::unique_ptr<EpollHandler> mEpollHandlerPtr;
         bool mQuit;
