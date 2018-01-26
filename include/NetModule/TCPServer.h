@@ -15,7 +15,7 @@
 namespace NetModule{
     class TCPConnectionHolder;
 
-    const static int DEFAULT_TIMINGWHEEL = 10;
+    constexpr static int DEFAULT_TIMINGWHEEL = 10;
 
     class TCPServer : Utils::noncopyable{
     public:
@@ -32,6 +32,7 @@ namespace NetModule{
         void removeConnection(std::weak_ptr<TCPConnection>);
         void removeConnectionInOwnerManager(std::weak_ptr<TCPConnection>);
         void refreshConnection(std::string&);
+        void setTimingWheelCircle(int);
     private:
         ep::EventManager mEventManager;
         ep::EventManagerThreadPool mEventManagerThreadPool;
@@ -43,6 +44,7 @@ namespace NetModule{
         SockAddr mLocalAddr;
         MessageCallback mMessageCallback;
         ConnectionCallback mConnectionCallback;
+        std::weak_ptr<ep::Timer> mTimerWheelHandle;
 
         void newConnection(int fd, SockAddr& addr);
     };

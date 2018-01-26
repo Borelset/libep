@@ -25,6 +25,7 @@ namespace Log{
     private:
         LogLevel mLevel;
         bool mOutput;
+        bool mConsole;
         bool mLineStart;
         std::weak_ptr<Logger> mLogger;
     };

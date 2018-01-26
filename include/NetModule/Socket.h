@@ -11,7 +11,7 @@
 #include "SockAddr.h"
 
 namespace NetModule{
-    #define MAX_ACCEPT_CONNECTION 10
+    constexpr static int MAX_ACCEPT_CONNECTION = 10;
 
     class Socket : Utils::noncopyable{
     public:
@@ -21,7 +21,7 @@ namespace NetModule{
         explicit Socket(Utils::FD& fd, SockAddr addr);
         ~Socket();
         void bindAddr(const char* ip, int port);
-        bool connect(SockAddr addr);
+        int connect(SockAddr addr);
         void listen();
         int accept(struct sockaddr_in*);
         int getSocket();
