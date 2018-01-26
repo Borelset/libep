@@ -20,7 +20,7 @@ NetModule::TCPServer::TCPServer(int port):
     mEventManagerThreadPool.setThreadNum(10);
     Log::LogInfo << "NetModule::TCPServer::TCPServer==>"
                  << "Construction" << Log::endl;
-    mEventManager.runAfter(
+    mTimerWheelHandle = mEventManager.runAfter(
             std::bind(&TimingWheel::goAhead, &mTimingWheel),
             1,
             1
@@ -37,7 +37,7 @@ void NetModule::TCPServer::start() {
                  << "Start" << Log::endl;
     mEventManagerThreadPool.start();
     mAcceptor.listen();
-    printf("Server Started Listening port:%d", mAcceptor.getLocalAddr().sin_port);
+    printf("Server started @ port:%d\n", mAcceptor.getLocalAddr().sin_port);
     mEventManager.loop();
 }
 
@@ -116,4 +116,14 @@ void NetModule::TCPServer::removeConnectionInOwnerManager(std::weak_ptr<NetModul
 void NetModule::TCPServer::refreshConnection(std::string & connName) {
     auto connHolderPtr = mConnectionMap[connName].lock();
     mTimingWheel.refresh(connHolderPtr);
+}
+
+void NetModule::TCPServer::setTimingWheelCircle(int n) {
+    if(mEventManager.isLocalThread()){
+        mTimingWheel.setTimingCircle(n);
+    }else{
+        mEventManager.runInLoop(
+                std::bind(&TimingWheel::setTimingCircle, &mTimingWheel, n)
+        );
+    }
 }

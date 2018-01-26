@@ -16,16 +16,16 @@ Log::Logger::Logger(LogLevel level):
         mUsing(0),
         mQuit(false),
         mIsLog(false),
-        mLevel(Info),
+        mLevel(level),
         mLogFilePtr()
 {
-    std::cout << "Utils::Logger::Logger==>"
-              << "Construction" << std::endl;
+    //std::cout << "Utils::Logger::Logger==>"
+    //          << "Construction" << std::endl;
     mWriteThread.run();
 }
 
 Log::Logger::~Logger() {
-    std::cout << "Logger is Releasing!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    //std::cout << "Logger is Releasing" << std::endl;
     mQuit = true;
     mCondition.notify();
     mWriteThread.join();
@@ -42,14 +42,14 @@ void Log::Logger::bufferSwapCallback() {
             mCounter = 0;
         }
         if(mLogFilePtr.get() == nullptr){
-            std::cout << "Utils::Logger::bufferSwapCallback==>"
-                      << "No LoggerFile Path" << std::endl;
+            //std::cout << "Utils::Logger::bufferSwapCallback==>"
+            //          << "No LoggerFile Path" << std::endl;
             mIsLog = true;
             continue;
         }
         int n = mBuffers[(mUsing+BUFFER_NUMS-1)%BUFFER_NUMS].writeToFD(mLogFilePtr->getFd());
-        std::cout << "Utils::Logger::bufferSwapCallback==>"
-                  << "Logger Thread write " << n << " character(s)" << std::endl;
+        //std::cout << "Utils::Logger::bufferSwapCallback==>"
+        //          << "Logger Thread write " << n << " character(s)" << std::endl;
     }
 }
 
@@ -83,10 +83,9 @@ void Log::Logger::setLevel(Log::LogLevel level) {
 void Log::Logger::setLogPath(char *path) {
     int fd = open(path, O_RDWR|O_CREAT, O_APPEND);
     if(fd < 0){
-        std::cout << "Utils::Logger::Logger==>"
-                  << "errno: " << errno << std::endl;
+        //std::cout << "Utils::Logger::Logger==>"
+        //         << "errno: " << errno << std::endl;
     }
-    mLogFilePtr.release();
     mLogFilePtr.reset(new Utils::FD(fd));
 }
 

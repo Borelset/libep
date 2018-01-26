@@ -17,6 +17,7 @@ namespace NetModule{
         explicit TimingWheel(int time);
         void refresh(std::shared_ptr<TCPConnectionHolder>);
         void goAhead();
+        void setTimingCircle(int);
     private:
         std::vector<std::list<std::shared_ptr<TCPConnectionHolder>>> mWheel;
         int mCircle;

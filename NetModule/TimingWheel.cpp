@@ -29,3 +29,12 @@ void NetModule::TimingWheel::goAhead() {
     mWheelPtr = (mWheelPtr+1)%mCircle;
     mWheel[mWheelPtr].clear();
 }
+
+void NetModule::TimingWheel::setTimingCircle(int n) {
+    if(n < mCircle){
+        Log::LogWarning << "NetModule::TimingWheel::setTimingCircle==>"
+                        << "new size is smaller than old one, some connection will be released" << Log::endl;
+    }
+    mWheel.resize(n);
+    mCircle = n;
+}

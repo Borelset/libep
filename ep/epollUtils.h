@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 namespace ep{
-    const int EpollSize = 200;
+    constexpr static int EpollSize = 200;
 
     enum ChannelStatus{
         ChannelStatusNew,

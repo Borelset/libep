@@ -9,13 +9,16 @@
 Log::LoggerStream::LoggerStream(std::weak_ptr <Logger> logger, LogLevel level):
         mLogger(logger),
         mLevel(level),
-        mLineStart(true)
+        mLineStart(true),
+        mConsole(false)
 {
     mOutput = logger.lock()->getLevel() <= level ? 1 : 0;
 }
 
 Log::LoggerStream &Log::LoggerStream::operator<<(const char * str) {
-    std::cout << str;
+    if(mConsole && mOutput){
+        std::cout << str;
+    }
     if(mOutput){
         mLogger.lock()->append((char*)str, strlen(str));
     }
@@ -23,7 +26,9 @@ Log::LoggerStream &Log::LoggerStream::operator<<(const char * str) {
 }
 
 Log::LoggerStream &Log::LoggerStream::operator<<(int num) {
-    std::cout << num;
+    if(mConsole && mOutput){
+        std::cout << num;
+    }
     if(mOutput){
         char numbuffer[32];
         sprintf(numbuffer, "%d", num);
@@ -40,7 +45,9 @@ Log::LoggerStream &Log::LoggerStream::operator<<(Log::LoggerStream&) {
 }
 
 Log::LoggerStream &Log::LoggerStream::operator<<(Log::LoggerEndl &) {
-    std::cout << std::endl;
+    if(mConsole && mOutput){
+        std::cout << std::endl;
+    }
     if(mOutput){
         mLogger.lock()->append((char*)"\n", 1);
     }
@@ -48,7 +55,9 @@ Log::LoggerStream &Log::LoggerStream::operator<<(Log::LoggerEndl &) {
 }
 
 Log::LoggerStream &Log::LoggerStream::operator<<(std::string& str) {
-    std::cout << str;
+    if(mConsole && mOutput){
+        std::cout << str;
+    }
     if(mOutput){
         mLogger.lock()->append((char*)str.c_str(), str.size());
     }

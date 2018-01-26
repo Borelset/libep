@@ -10,8 +10,8 @@
 #include "LoggerStream.h"
 
 namespace Log{
-    static const char* LOG_DEFAULT_PATH = "./log.log";
-    static const LogLevel DEFAULT_LOGGER_LEVEL = Info;
+    constexpr static char* LOG_DEFAULT_PATH = (char*)"./log.log";
+    constexpr static LogLevel DEFAULT_LOGGER_LEVEL = Nothing;
 
     class LoggerManager : Utils::noncopyable{
     public:

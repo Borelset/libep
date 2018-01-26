@@ -15,8 +15,10 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/build/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/build/lib)
 
 add_library(ep SHARED ${ROOTSRC} ${EPSRC} ${NETSRC} ${UTILSSRC} ${LOGSRC})
+target_link_libraries(ep pthread)
+
 add_executable(eptest ${ROOTSRC} ${EPSRC} ${NETSRC} ${UTILSSRC} ${LOGSRC} ${TESTSRC})
 target_link_libraries(eptest pthread)
-target_link_libraries(ep pthread)
+
 install(TARGETS ep
         LIBRARY DESTINATION lib)

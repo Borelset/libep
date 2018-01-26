@@ -26,8 +26,8 @@ NetModule::Socket::Socket(int domain, int type, int protocol):
 void NetModule::Socket::bindAddr(const char* ip, int port) {
     mAddr.setAddr(ip, port);
     if(bind(mSocketFd.getFd(), (sockaddr*)&mAddr.getAddr(), sizeof mAddr.getAddr()) < 0){
-        Log::LogInfo << "NetModule::Socket::bind==>"
-                     << "fail in bind" << Log::endl;
+        Log::LogError << "NetModule::Socket::bind==>"
+                      << "fail in bind" << Log::endl;
         exit(0);
     }
 }
@@ -39,7 +39,7 @@ int NetModule::Socket::getSocket() {
 void NetModule::Socket::listen() {
     if(::listen(mSocketFd.getFd(), MAX_ACCEPT_CONNECTION) < 0){
         Log::LogError << "NetModule::Socket::listen==>>"
-                     << "fail in listen" << Log::endl;
+                      << "fail in listen" << Log::endl;
     }
 }
 
@@ -74,12 +74,13 @@ void NetModule::Socket::setKeepAlive(bool opt) {
     setsockopt(mSocketFd.getFd(), SOL_SOCKET, SO_KEEPALIVE, &option, sizeof option);
 }
 
-bool NetModule::Socket::connect(NetModule::SockAddr addr) {
+int NetModule::Socket::connect(NetModule::SockAddr addr) {
     if(::connect(mSocketFd.getFd(), (sockaddr*)&addr.getAddr(), sizeof (struct sockaddr)) < 0){
+        int savedErrno = errno;
         Log::LogError << "NetModule::Socket::connect==>"
                       << "Connect error" << Log::endl;
-        return false;
+        return savedErrno;
     }
-    return true;
+    return 0;
 }
 

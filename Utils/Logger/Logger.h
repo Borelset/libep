@@ -13,8 +13,8 @@
 #include "../FD.h"
 
 namespace Log{
-    static const int BUFFER_NUMS = 2;
-    static const int BUFFER_FLASH_THRESHOLD = 20;
+    constexpr static int BUFFER_NUMS = 2;
+    constexpr static int BUFFER_FLASH_THRESHOLD = 20;
 
     enum LogLevel{
         Info,

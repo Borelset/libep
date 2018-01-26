@@ -9,8 +9,8 @@
 #include <string>
 
 namespace Utils{
-    const unsigned long DEFAULT_BUFFER_SIZE = 1024;
-    const int RECEIVER_BUFFER_SIZE = 65536;
+    constexpr unsigned long DEFAULT_BUFFER_SIZE = 1024;
+    constexpr int RECEIVER_BUFFER_SIZE = 65536;
 
     class Buffer{
     public:
