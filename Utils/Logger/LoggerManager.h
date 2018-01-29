@@ -11,7 +11,7 @@
 
 namespace Log{
     constexpr static char* LOG_DEFAULT_PATH = (char*)"./log.log";
-    constexpr static LogLevel DEFAULT_LOGGER_LEVEL = Nothing;
+    constexpr static LogLevel DEFAULT_LOGGER_LEVEL = Error;
 
     class LoggerManager : Utils::noncopyable{
     public:

@@ -82,7 +82,8 @@ std::weak_ptr<Timer> EventManager::runAfter(std::function<void()> Callback,
 }
 
 bool EventManager::isLocalThread() {
-    bool result = mThreadId == Utils::CurrentThread::gettid();
+    bool result =
+            mThreadId == Utils::CurrentThread::gettid();
     if(!result){
         Log::LogInfo << "ep::EventManager::isLocalThread==>"
                      << "EventManager created in:" << mThreadId << " isLocalThread called in:" << Utils::CurrentThread::gettid() << Log::endl;

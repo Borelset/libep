@@ -10,7 +10,7 @@ Log::LoggerStream::LoggerStream(std::weak_ptr <Logger> logger, LogLevel level):
         mLogger(logger),
         mLevel(level),
         mLineStart(true),
-        mConsole(false)
+        mConsole(true)
 {
     mOutput = logger.lock()->getLevel() <= level ? 1 : 0;
 }

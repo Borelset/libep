@@ -11,8 +11,7 @@
 #include "Socket.h"
 
 namespace NetModule{
-    constexpr static time_t DEFAULT_RETRY_TIME = 1;
-    constexpr static time_t MAX_RETRY_TIME = 1;
+    constexpr static time_t MAX_RETRY_TIME = 30;
 
     class Connector : Utils::noncopyable{
     public:
@@ -31,6 +30,7 @@ namespace NetModule{
         void stop();
         void setState(ConnectorState);
     private:
+        time_t DEFAULT_RETRY_TIME;
         ConnectionCallback mConnectionCallback;
         ep::EventManager* mEventManager;
         std::unique_ptr<Socket> mSocketPtr;
@@ -38,6 +38,7 @@ namespace NetModule{
         std::unique_ptr<ep::Channel> mChannelPtr;
         ConnectorState mConnectState;
         time_t mRetryTime;
+        std::weak_ptr<ep::Timer> mRetryTimer;
 
         void startInLoop();
         void stopInLoop();

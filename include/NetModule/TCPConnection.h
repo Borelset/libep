@@ -22,8 +22,8 @@ namespace NetModule{
         typedef std::function<void(std::string&)> RefreshCallback;
         TCPConnection(std::string name,
                       int fd,
-                      SockAddr& localAddr,
-                      SockAddr& peerAddr,
+                      const SockAddr& localAddr,
+                      const SockAddr& peerAddr,
                       ep::EventManager* eventmanager);
         ~TCPConnection();
         void setMessageCallback(const MessageCallback& messageCallback);

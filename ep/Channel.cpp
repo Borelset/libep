@@ -10,9 +10,13 @@ using namespace ep;
 
 void Channel::process() {
     if(mRevent & EpollReadEvent)
-        mReadCallback();
+        if(mReadCallback){
+            mReadCallback();
+        }
     if(mRevent & EpollWriteEvent)
-        mWriteCallback();
+        if(mWriteCallback){
+            mWriteCallback();
+        }
     if(mRevent & EpollErrorEvent)
         if(mErrorCallback){
             mErrorCallback();

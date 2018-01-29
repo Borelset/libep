@@ -12,8 +12,8 @@
 #include "../Utils/CurrentThread.h"
 
 NetModule::TCPConnection::TCPConnection(std::string name, int fd,
-                                        NetModule::SockAddr &localAddr,
-                                        NetModule::SockAddr &peerAddr,
+                                        const NetModule::SockAddr &localAddr,
+                                        const NetModule::SockAddr &peerAddr,
                                         ep::EventManager* eventmanager):
                             mEventManagerPtr(eventmanager),
                             mName(name),
