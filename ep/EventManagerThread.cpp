@@ -45,3 +45,8 @@ void EventManagerThread::threadFunction() {
     }
     eventManager.loop();
 }
+
+void EventManagerThread::stop() {
+    mEventManager->setQuit();
+    mThread.join();
+}

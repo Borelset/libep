@@ -12,7 +12,7 @@ NetModule::TCPClient::TCPClient(ep::EventManager* eventManager,
                                 const std::string& name) :
         mEventManager(eventManager),
         mServerAddr(addr),
-        mName("C_Connection"),
+        mName(name),
         mConnector(mEventManager, addr),
         mConnectionIndex(0),
         mConnected(false)
@@ -45,9 +45,7 @@ void NetModule::TCPClient::setMessageCallback(const MessageCallback& callback) {
 void NetModule::TCPClient::newConnection(int fd) {
     Log::LogInfo << "NetModule::TCPClient::newConnection==>"
                  << "new TCPConnection" << Log::endl;
-    char connBuffer[32];
-    snprintf(connBuffer, sizeof connBuffer, "%d", mConnectionIndex++);
-    std::string connName = mName + connBuffer;
+    std::string connName = mName + "_Connection";
     mTCPConnectionPtr.reset(
             new TCPConnection(connName, fd,
                               SockAddr(getLocalAddr(fd)),

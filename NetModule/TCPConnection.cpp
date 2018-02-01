@@ -129,6 +129,8 @@ void NetModule::TCPConnection::send(const std::string& message) {
                     std::bind(&TCPConnection::sendInLoop, this, message)
             );
         }
+    }else{
+        std::cout << "not connected";
     }
 }
 

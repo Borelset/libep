@@ -62,6 +62,9 @@ public:
     int size(){
         return mMap.size();
     }
+    void clear(){
+        mMap.clear();
+    }
 
 private:
     std::map<K, T> mMap;

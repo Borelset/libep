@@ -37,7 +37,7 @@ void NetModule::TCPServer::start() {
                  << "Start" << Log::endl;
     mEventManagerThreadPool.start();
     mAcceptor.listen();
-    printf("Server started @ port:%d\n", mAcceptor.getLocalAddr().sin_port);
+    printf("Server started @ port:%d\n", ntohs(mAcceptor.getLocalAddr().sin_port));
     mEventManager.loop();
 }
 
