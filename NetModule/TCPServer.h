@@ -33,6 +33,7 @@ namespace NetModule{
         void removeConnectionInOwnerManager(std::weak_ptr<TCPConnection>);
         void refreshConnection(std::string&);
         void setTimingWheelCircle(int);
+        int connCount();
     private:
         ep::EventManager mEventManager;
         ep::EventManagerThreadPool mEventManagerThreadPool;

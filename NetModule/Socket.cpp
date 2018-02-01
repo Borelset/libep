@@ -77,8 +77,8 @@ void NetModule::Socket::setKeepAlive(bool opt) {
 int NetModule::Socket::connect(NetModule::SockAddr addr) {
     if(::connect(mSocketFd.getFd(), (sockaddr*)&addr.getAddr(), sizeof (struct sockaddr)) < 0){
         int savedErrno = errno;
-        Log::LogError << "NetModule::Socket::connect==>"
-                      << "Connect error" << Log::endl;
+        Log::LogWarning << "NetModule::Socket::connect==>"
+                      << "Connect warning" << Log::endl;
         return savedErrno;
     }
     return 0;

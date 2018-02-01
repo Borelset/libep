@@ -23,6 +23,7 @@ void NetModule::TimingWheel::refresh(std::shared_ptr<TCPConnectionHolder> tch) {
 }
 
 void NetModule::TimingWheel::goAhead() {
+    if(mCircle == 0) return;
     Log::LogInfo << "NetModule::TimingWheel::goAhead==>"
                  << "mWheelPtr:" << mWheelPtr << Log::endl;
     Utils::MutexLockGuard localGuard(mMutexLock);

@@ -43,7 +43,7 @@ void NetModule::TCPClient::setMessageCallback(const MessageCallback& callback) {
 }
 
 void NetModule::TCPClient::newConnection(int fd) {
-    Log::LogInfo << "NNetModule::TCPClient::newConnection==>"
+    Log::LogInfo << "NetModule::TCPClient::newConnection==>"
                  << "new TCPConnection" << Log::endl;
     char connBuffer[32];
     snprintf(connBuffer, sizeof connBuffer, "%d", mConnectionIndex++);

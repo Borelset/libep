@@ -127,3 +127,7 @@ void NetModule::TCPServer::setTimingWheelCircle(int n) {
         );
     }
 }
+
+int NetModule::TCPServer::connCount() {
+    return mConnectionMap.size();
+}
