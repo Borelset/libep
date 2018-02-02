@@ -30,13 +30,11 @@ public:
     typedef function<void()> Callback;
     typedef function<void(weak_ptr<NetModule::TCPConnection> tcpc, time_t time)> MessageCallback;
     static ClientState stateParser(string &str);
-    static void parseResult(string str, int &total, int &index, int &result);
     explicit nQueenClientLogic(ep::EventManager*);
     string readyCallback(string &content, const string &connName);
     string resultCallback(string &content, const string &connName);
     string errorCallback(string &content, const string &connName);
     void start(int n);
-    void confirm();
     void setClient(NetModule::SockAddr&);
     void setMessageCallback(const MessageCallback&);
 private:
@@ -47,15 +45,14 @@ private:
     TSVector<int> mLeftTasks;
     TSMap<string, int> mConfirmedTasks;
     Utils::MutexLock mResultLock;
-    Utils::MutexLock mStartLock;
     Utils::MutexLock mProcessLock;
     int mResult;
-    Utils::Condition mStartCondition;
     Utils::Condition mProcessCondition;
-    bool mStart;
-    clock_t mT1, mT2;
+    int64_t mT1, mT2;
     MessageCallback mMessageCallback;
-    bool mFinished;
+
+    int64_t getTime();
+    static void parseResult(string str, int &total, int &index, int &result);
 };
 
 

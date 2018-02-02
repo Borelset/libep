@@ -4,6 +4,7 @@
 
 #include "nQueenClientLogic.h"
 #include <string.h>
+#include <sys/time.h>
 
 nQueenClientLogic::ClientState nQueenClientLogic::stateParser(string &str) {
     const char* strPtr = str.c_str();
@@ -44,7 +45,6 @@ void nQueenClientLogic::parseResult(string str, int &total, int &index, int &res
 nQueenClientLogic::nQueenClientLogic(ep::EventManager* eventManager):
         mEventManager(eventManager),
         mActiveServer(0),
-        mStartCondition(mStartLock),
         mProcessCondition(mProcessLock)
 {
 
@@ -52,10 +52,10 @@ nQueenClientLogic::nQueenClientLogic(ep::EventManager* eventManager):
 
 string nQueenClientLogic::readyCallback(string &content, const string &connName) {
     string result;
-    while(!mStart){
-        Utils::MutexLockGuard lockGuard(mStartLock);
-        mStartCondition.wait();
-    }
+    //while(!mStart){
+    //    Utils::MutexLockGuard lockGuard(mStartLock);
+    //    mStartCondition.wait();
+    //}
     int n = mLeftTasks.pop_back();
     mConfirmedTasks.insert(connName, n);
 
@@ -82,9 +82,9 @@ string nQueenClientLogic::resultCallback(string &content, const string &connName
         result = readyCallback(content, connName);
     }
     if(mLeftTasks.size() == 0 && mConfirmedTasks.size() == 0){
-        mT2 = clock();
+        mT2 = getTime();
         cout << "result:" << mResult << endl;
-        cout << "duration:" << mT2 - mT1 << endl;
+        cout << "duration:" << (mT2 - mT1) << "ms" << endl;
         mProcessCondition.notify();
     }
     return result;
@@ -101,20 +101,15 @@ void nQueenClientLogic::start(int n) {
         mLeftTasks.push_back(i);
     }
     mConfirmedTasks.clear();
-    mStartCondition.notifyAll();
-    mStart = true;
-    mT1 = clock();
-    {
-        Utils::MutexLockGuard lockGuard(mProcessLock);
-        mProcessCondition.wait();
-    }
-}
+    mT1 = getTime();
 
-void nQueenClientLogic::confirm() {
-    mStart = false;
     string confirmStr = "Confirm";
     for(int i=0; i<mActiveServer; i++){
         mClients[i]->send(confirmStr);
+    }
+    {
+        Utils::MutexLockGuard lockGuard(mProcessLock);
+        mProcessCondition.wait();
     }
 }
 
@@ -138,4 +133,9 @@ void nQueenClientLogic::setMessageCallback(const nQueenClientLogic::MessageCallb
     mMessageCallback = callback;
 }
 
-
+int64_t nQueenClientLogic::getTime() {
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    int64_t time = tv.tv_sec*1000 + tv.tv_usec/1000;
+    return time;
+}

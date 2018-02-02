@@ -8,7 +8,8 @@
 #include <NetModule/TCPConnection.h>
 #include <NetModule/TCPServer.h>
 #include <cstring>
-#include <string>
+#include "ServerAddressParser.h"
+#include "Menu.h"
 
 using namespace NetModule;
 using namespace std;
@@ -38,18 +39,32 @@ void messageCallback(weak_ptr<TCPConnection> tcpc, time_t time){
     }
 }
 
-vector<NetModule::SockAddr> serverList = {
-        {"127.0.0.1", 9001},
-        {"127.0.0.1", 9002},
-        {"127.0.0.1", 9003},
-};
+void menuInitCallback(){
+    cout << "N Queen Solver Client" << endl;
+}
 
-int main(){
+void startCallback(vector<string> args){
+    if(args.size() <= 1){
+        cout << "Usage: start [n]" << endl;
+        return;
+    }
+    int n = atoi(args[1].c_str());
+    QCL->start(n);
+}
+
+int main(int argc, char** argv){
+    if(argc == 1){
+        cout << "No server lists provided\n";
+        return 0;
+    }
+
+    vector<NetModule::SockAddr> serverList = SAParser(argv[1]);
+
     ep::EventManagerThread eventManagerThread;
     eventManagerThread.start();
     ep::EventManager* eventManager = eventManagerThread.getEventManagerHandler();
     if(eventManager == nullptr){
-        cout << "something wrong..\nfail to run a thread" << endl;
+        cout << "Something wrong..\nFail to run a thread" << endl;
     }
     nQueenClientLogic qcl(eventManager);
     qcl.setMessageCallback(messageCallback);
@@ -58,19 +73,14 @@ int main(){
         qcl.setClient(serverList[i]);
     }
 
-    string input;
-    while(strcmp(input.c_str(), "exit")){
-        cout << "$";
-        getline(cin, input);
-        if(!strcmp(input.c_str(), "confirm")){
-            cout << "Send confirm.." << endl;
-            QCL->confirm();
-        }
-        else if(!strncmp(input.c_str(), "start", 5)){
-            cout << "getting start.." << endl;
-            int n = atoi(input.c_str() + 5);
-            QCL->start(n);
-        }
-    }
+    Menu mMenu;
+    mMenu.setInit(menuInitCallback);
+    mMenu.addCommand(
+            MenuItem(
+                    "start",
+                    "Get the amount of solutions to N Queen problem",
+                    startCallback)
+    );
+    mMenu.startMenu();
     eventManagerThread.stop();
 }

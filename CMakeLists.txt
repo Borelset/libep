@@ -32,6 +32,5 @@ target_link_libraries(nQueenServer pthread)
 add_executable(nQueenClient ${ROOTSRC} ${EPSRC} ${NETSRC} ${UTILSSRC} ${LOGSRC} ${NQCSRC} ./test/nQueen/ThreadSafeStruct.h)
 target_link_libraries(nQueenClient pthread)
 
-
 install(TARGETS ep
         LIBRARY DESTINATION lib)
