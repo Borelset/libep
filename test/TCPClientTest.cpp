@@ -31,13 +31,19 @@ void testConnectionCallback(std::weak_ptr<NetModule::TCPConnection> tcpc){
 
 std::string message = "hello i`m client!";
 
-int main(){
+int main(int argc, char** argv){
+    if(argc < 3 || argc > 3){
+        printf("Wrong number of args\n");
+        printf("Usage: TCPClientTest [IP Address] [Port]\n");
+        return 0;
+    }
+
     ep::EventManagerThread eventManagerThread;
     eventManagerThread.start();
     ep::EventManager* handler = nullptr;
     while( ( handler = eventManagerThread.getEventManagerHandler())
            == nullptr );
-    NetModule::SockAddr serverAddr("127.0.0.1", 9981);
+    NetModule::SockAddr serverAddr(argv[1], atoi(argv[2]));
     NetModule::TCPClient tcpClient(handler,
                                    serverAddr,
                                    "testClient");

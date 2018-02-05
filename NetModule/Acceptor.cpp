@@ -13,7 +13,7 @@ NetModule::Acceptor::Acceptor(ep::EventManager* eventManager, int port):
         mListenChannel(mEventManager, mSocket.getSocket()),
         mListening(false)
 {
-    mSocket.bindAddr("127.0.0.1", port);
+    mSocket.bindAddr("0.0.0.0", port);
     mListenChannel.setReadCallback(std::bind(&Acceptor::handleAccept, this));
     Log::LogInfo << "NetModule::Acceptor::Acceptor=>>"
                  << "Construction" << Log::endl;
@@ -36,6 +36,8 @@ void NetModule::Acceptor::handleAccept() {
     SockAddr sockAddr;
     int accfd = mSocket.accept(&sockAddr.getAddr());
     if(accfd > 0){
+        Log::LogError << "NetModule::Acceptor::handleAccept=>>"
+                      << "accept connection" << Log::endl;
         mListenCallback(accfd, sockAddr);
     }else{
         Log::LogError << "NetModule::Acceptor::handleAccept=>>"

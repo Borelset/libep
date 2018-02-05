@@ -16,7 +16,10 @@ NetModule::TCPServer::TCPServer(int port):
         mEventManagerThreadPool(&mEventManager)
 {
     mAcceptor.setListonCallback(
-            std::bind(&TCPServer::newConnection, this, std::placeholders::_1, std::placeholders::_2) );
+            std::bind(&TCPServer::newConnection,
+                      this,
+                      std::placeholders::_1,
+                      std::placeholders::_2) );
     mEventManagerThreadPool.setThreadNum(10);
     Log::LogInfo << "NetModule::TCPServer::TCPServer==>"
                  << "Construction" << Log::endl;
@@ -37,7 +40,8 @@ void NetModule::TCPServer::start() {
                  << "Start" << Log::endl;
     mEventManagerThreadPool.start();
     mAcceptor.listen();
-    printf("Server started @ port:%d\n", ntohs(mAcceptor.getLocalAddr().sin_port));
+    printf("Server started @ port:%d\n",
+           ntohs(mAcceptor.getLocalAddr().sin_port));
     mEventManager.loop();
 }
 
@@ -69,13 +73,18 @@ void NetModule::TCPServer::newConnection(int fd, NetModule::SockAddr &addr) {
     sharedPtr->setMessageCallback(mMessageCallback);
     sharedPtr->setConnectionCallback(mConnectionCallback);
     sharedPtr->setCloseCallback(
-            std::bind(&TCPServer::removeConnection, this, std::placeholders::_1)
+            std::bind(&TCPServer::removeConnection,
+                      this,
+                      std::placeholders::_1)
     );
     sharedPtr->setRefreshCallback(
-            std::bind(&TCPServer::refreshConnection, this, std::placeholders::_1)
+            std::bind(&TCPServer::refreshConnection,
+                      this,
+                      std::placeholders::_1)
     );
     ioManager->runInLoop(
-            std::bind(&TCPConnection::connectionEstablish, sharedPtr)
+            std::bind(&TCPConnection::connectionEstablish,
+                      sharedPtr)
     );
 }
 
@@ -89,7 +98,9 @@ void NetModule::TCPServer::removeConnection(std::weak_ptr<NetModule::TCPConnecti
     Log::LogInfo << "NetModule::TCPServer::removeConnection==>"
                  << "removeConnection" << Log::endl;
     mEventManager.runInLoop(
-            std::bind(&TCPServer::removeConnectionInOwnerManager, this, connPtr)
+            std::bind(&TCPServer::removeConnectionInOwnerManager,
+                      this,
+                      connPtr)
     );
 }
 
@@ -109,7 +120,8 @@ void NetModule::TCPServer::removeConnectionInOwnerManager(std::weak_ptr<NetModul
     }
     ep::EventManager* ioManager = sharedPtr->getManager();
     ioManager->runInLoop(
-            std::bind(&TCPConnection::connectionDestroy, sharedPtr)
+            std::bind(&TCPConnection::connectionDestroy,
+                      sharedPtr)
     );
 }
 
@@ -123,7 +135,9 @@ void NetModule::TCPServer::setTimingWheelCircle(int n) {
         mTimingWheel.setTimingCircle(n);
     }else{
         mEventManager.runInLoop(
-                std::bind(&TimingWheel::setTimingCircle, &mTimingWheel, n)
+                std::bind(&TimingWheel::setTimingCircle,
+                          &mTimingWheel,
+                          n)
         );
     }
 }

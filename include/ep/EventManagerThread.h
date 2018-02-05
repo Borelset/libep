@@ -15,7 +15,6 @@ namespace ep{
         ~EventManagerThread();
         void start();
         EventManager* getEventManagerHandler();
-        void stop();
     private:
         Utils::Thread mThread;
         EventManager* mEventManager;
